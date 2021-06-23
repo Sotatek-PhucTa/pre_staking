@@ -35,7 +35,7 @@ contract NativeMetaTransaction is EIP712Base {
         require(verify(userAddress, metaTx, sigR, sigS, sigV), 'Signer and signature do not match'); 
         nonces[userAddress] = nonces[userAddress].add(1);
 
-        emit MetaTransactionExecuted(userAddress, msg.sender, functionSignature);
+        emit MetaTransactionExecuted(userAddress, payable(msg.sender), functionSignature);
     }
 
     function hashMetaTransaction(MetaTransaction memory metaTx) internal pure returns (bytes32) {
