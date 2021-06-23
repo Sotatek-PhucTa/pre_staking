@@ -25,13 +25,13 @@ contract StakingRewards is
     uint256 public periodFinish = 0;
     uint256 public rewardDuration = 60 days;
     uint256 public rewardPerTokenStored;
-    uint256 private _totalSupply;
+    uint256 private _totalSupply;   //total numbers of supplied LP token
     address[] private stakers;
     address[] public rewardTokens;
 
     mapping(address => uint256) public rewardsPerTokenMap;
     mapping(address => uint256) public tokenRewardRate;
-    mapping(address => uint256) private _balances;
+    mapping(address => uint256) private _balances;   //Numer of supplied LP token of each staker
     mapping(address => uint256) public rewardLastUpdatedTime;
     mapping(address => mapping(address => uint256)) public userRewardPerTokenPaid;
     mapping(address => mapping(address => uint256)) public rewards;
@@ -168,8 +168,8 @@ contract StakingRewards is
         public override nonReentrant updateReward(_msgSender())
     {
         require(amount > 0, "Cannot withdraw 0");
-        _totalSupply = _totalSupply.sub(amount);
         _balances[_msgSender()] = _balances[_msgSender()].sub(amount);
+        _totalSupply = _totalSupply.sub(amount);
         stakingToken.safeTransfer(_msgSender(), amount);
         emit Withdrawn(_msgSender(), amount);
     }
