@@ -168,8 +168,8 @@ contract StakingRewards is
         public override nonReentrant updateReward(_msgSender())
     {
         require(amount > 0, "Cannot withdraw 0");
-        _balances[_msgSender()] = _balances[_msgSender()].sub(amount);
         _totalSupply = _totalSupply.sub(amount);
+        _balances[_msgSender()] = _balances[_msgSender()].sub(amount);
         stakingToken.safeTransfer(_msgSender(), amount);
         emit Withdrawn(_msgSender(), amount);
     }
@@ -179,8 +179,11 @@ contract StakingRewards is
     {
         for (uint256 i = 0; i < rewardTokens.length; i++) {
             uint256 reward = rewards[_msgSender()][rewardTokens[i]];
-            IBEP20(rewardTokens[i]).safeTransfer(_msgSender(), reward);
-            emit RewardPaid(_msgSender(), reward);
+            if (reward > 0) {
+                rewards[_msgSender()][rewardTokens[i]] = 0;
+                IBEP20(rewardTokens[i]).safeTransfer(_msgSender(), reward);
+                emit RewardPaid(_msgSender(), reward);
+            }
         }
     }
 
