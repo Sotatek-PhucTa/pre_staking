@@ -6,109 +6,123 @@ import "@pancakeswap/pancake-swap-lib/contracts/access/Ownable.sol";
 import "./StakingRewards.sol";
 
 contract StakingRewardsFactory is Ownable {
-    //immutables
-    uint256 public stakingRewardsGenesis;
 
-    // the staking tokens for which the rewards contract has been deployed
+    //===================STATE VARIABLES====================
+
+    //Address of token that reward to stakers
+    address public rewardToken;
+    uint256 public stakingRewardGenesis;
+
+    //the staking tokens for which the rewards contract has been deployed
     address[] public stakingTokens;
 
-    // info about rewards for a particular staking token
-    struct StakingRewardsInfo {
-        address stakingRewards;
-        address[] poolRewardToken;
-        uint256[] poolRewardAmount;
+    //info about rewards for a particular staking token
+    struct StakingRewardInfo {
+        address stakingReward;   //Address of StakingReward Contract after deployed
+        uint256 rewardAmount;   //The amount of Reward Token left in the StakingReward
+        uint256 rewardDuration;  //Time for staker to stake and earn token
+        uint256 vestingPeriod;   //Time period for get RewardToken
+        uint256 claimable;       //Percentage of amount can get in first split in vestingPeriod;
     }
 
-    mapping(address => StakingRewardsInfo) public stakingRewardsInfoByStakingToken;
+    mapping(address => StakingRewardInfo) public stakingRewardInfosByStakingToken;
 
-    constructor(uint256 _stakingRewardsGenesis) public Ownable() {
-        require(_stakingRewardsGenesis >= block.timestamp,
-        "StakingRewardsFactory::constructor: genesis too soon");
-        stakingRewardsGenesis = _stakingRewardsGenesis;
+    constructor(address _rewardToken, uint256 _stakingRewardGenesis) public Ownable() {
+        require(_stakingRewardGenesis >= block.timestamp, 'StakingRewardFactory::constructor: genesis too soon');
+
+        rewardToken = _rewardToken;
+        stakingRewardGenesis = _stakingRewardGenesis;
     }
 
-    ////permisioned functions
-
-    // deploy a staking reward contract for the staking token, and store the reward amount
-    // the reward will be distributed to the staking reward contract no sooner than the genesis    
+    //===================PERMISSIONED FUNCTIONS====================
+    /**
+     * @dev Deploy a StakingReward Contract for a particular stakingToken
+     * @param stakingToken Token that stakers stake into the farm
+     * @param rewardAmount Amount of StakingRewardFactory contract token left for StakingReward contract
+     * @param rewardDuraton Time for staker to stake and earn rewardToken
+     * @param vestingPeriod Time for staker get reward after rewardDuration
+     * @param splits Number of times the reward will be released
+     * @param claimable Percentage of amount of total vested reward that a staker can get each time the reward was released
+     */
     function deploy(
         address stakingToken,
-        address[] memory rewardTokens,
-        uint256[] memory rewardAmounts
-    ) public onlyOwner() {
-        StakingRewardsInfo storage info = 
-            stakingRewardsInfoByStakingToken[stakingToken];
-        require(info.stakingRewards == address(0),
-        "StakingRewardsFactory::deploy: already deployed");
-        info.stakingRewards = address(
-            new StakingRewards(address(this), rewardTokens, stakingToken)
-        );
+        uint256 rewardAmount,
+        uint256 rewardDuration,
+        uint256 vestingPeriod,
+        uint256 splits,
+        uint256 claimable
+    ) public onlyOwner {
+        StakingRewardInfo storage info = stakingRewardInfosByStakingToken[stakingToken];
+        require(info.stakingReward == address(0), 'StakingRewardFactory::deploy: already deployed');
 
-        for (uint8 i = 0; i < rewardTokens.length; i++) {
-            require(rewardAmounts[i] > 0,
-            "StakingRewardsFactory::addRewardToken: reward amount should be greater than 0");
-            info.poolRewardToken.push(rewardTokens[i]);
-            info.poolRewardAmount.push(rewardAmount[i]);
-        }
+        info.stakingReward = address(
+            new StakingReward(
+                address(this),        //rewardDistributioner
+                rewardToken,
+                stakingToken,
+                rewardDuration,
+                vestingPeriod,
+                splits,
+                claimable
+            )
+        );
+        info.rewardAmount = rewardAmount;
+        info.rewardDuration = rewardDuration;
+        info.vestingPeriod = vestingPeriod;
+        info.claimable = claimable;
         stakingTokens.push(stakingToken);
     }
 
-    function rescueFunds(address stakingToken, address tokenAddress) 
-        public onlyOwner
-    {
-        StakingRewardsInfo storage info = stakingRewardsInfoByStakingToken[stakingToken];
-        require(info.stakingRewards != address(0),
-        "StakingRewardsFactory::notifyRewardAmount: not deployed");
-        StakingRewards(info.stakingRewards).rescueFunds(tokenAddress, msg.sender);
+    //========================PERMISIONLESS FUNCTIONS============================
+    /**
+     * @dev Call notifyRewardAmount for all stakingToken that already deployed by this factory
+     */
+    function notifyRewardAmounts() public {
+        require(stakingTokens.length > 0, 'StakingRewardFactory::notifyRewardAmount: no deployed');
+        for (uint256 i = 0; i < stakingTokens.length; i++) {
+            notifyRewardAmount(stakingTokens[i]);
+        }
     }
 
-    // Rescue leftover funds from factory
+    /**
+     * @dev Notify reward amount for a StakingReward corresponding with stakingToken
+     * transfer info.rewardAmount to StakingReward
+     */
+    function notifyRewardAmount(address stakingToken) public {
+        require(block.timestamp >= stakingRewardGenesis, 'StakingRewardFactory::notifyRewardAmount: not ready');
+        
+        StakingRewardInfo storage info = stakingRewardInfosByStakingToken[stakingToken];
+        require(info.stakingReward != address(0), 'StakingRewardFactory::notifyRewardAmount: not deployed');
+
+        if (info.rewardAmount > 0) {
+            uint256 rewardAmount = info.rewardAmount;
+            info.rewardAmount = 0;
+            require(IBEP20(rewardToken).transfer(info.stakingReward, rewardAmount),
+            'StakingRewardFactory::notifyRewardAmount: transfer failed');
+            StakingReward(info.stakingReward).notifyRewardAmount(rewardAmount);
+        }
+    }
+
+    /**
+     * @dev Rescue leftover fund from pool
+     * @param stakingToken stakingToken in the pool that we want to rescue fund
+     * @param tokenAddress address of the token we want to rescue
+     */
+    function rescueFunds(address stakingToken, address tokenAddress) public onlyOwner {
+        StakingRewardInfo storage info = stakingRewardInfosByStakingToken[stakingToken];
+        require(info.stakingReward != address(0), 'StakingRewardFactory::notifyRewardAmount: not deployed'); 
+        StakingReward(info.stakingReward).rescueFunds(tokenAddress, msg.sender);
+    }
+
+    /**
+     * @dev Rescue leftover fund from this factory
+     * @param tokenAddress address of the token we want to rescue
+     */
     function rescueFactoryFunds(address tokenAddress) public onlyOwner {
         IBEP20 token = IBEP20(tokenAddress);
         uint256 balance = token.balanceOf(address(this));
-        require(balance > 0, "No balance for given token address");
+        require(balance > 0, 'No balance for given token address');
         token.transfer(msg.sender, balance);
     }
-
-
-    //// permisionless functions
-    function notifyRewardAmounts() public {
-        require(stakingTokens.length > 0,
-        "StakingRewardsFactory::notifyRewardsAmount: called before any deploys");
-        for (uint256 i = 0; i < stakingTokens.length; i++) {
-            notifyRewardAmounts(stakingTokens[i]);
-        }
-    }
-
-    // notify reward amount for an individual staking token
-    // this is a fallback in case the notifyRewardsAmounts costs too much gas to call for other contracts
-    function notifyRewardAmounts(address stakingToken) public {
-        require(block.timestamp >= stakingRewardsGenesis,
-        "StakingRewardsFactory::notifyRewardAmount: not ready");
-        StakingRewardsInfo storage info = stakingRewardsInfoByStakingToken[stakingToken];
-        require(
-            info.stakingRewards != address(0),
-            "StakingRewardsFactory::notifyRewardAmount: not deployed"
-        );
-        for (uint256 i = 0; i < info.poolRewardToken.length; i++) {
-            uint256 rewardAmount = info.poolRewardAmount[i];
-            if (rewardAmount > 0) {
-                info.poolRewardAmount[i] = 0;
-                require(IBEP20(info.poolRewardToken[i]).transfer(info.stakingRewards, rewardAmount),
-                "StakingRewardsFactory::notifyRewardAmount: transfer failed");
-                StakingRewards(info.stakingRewards).notifyRewardAmount(info.poolRewardToken[i], rewardAmout);
-            }
-        }
-    }
-
-    function stakingRewardsInfo(address stakingToken) 
-    public view returns (address, address[] memory, uint256[] memory) {
-        StakingRewardsInfo storage info = 
-            stakingRewardsInfoByStakingToken[stakingToken];
-            return (
-                info.stakingRewards,
-                info.poolRewardToken,
-                info.poolRewardAmount
-            );
-    }
 }
+

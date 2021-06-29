@@ -1,6 +1,5 @@
 {
   "dependencies": {
-    "@openzeppelin/contracts": "^4.1.0",
     "@pancakeswap/pancake-swap-lib": "^0.0.4"
   }
 }
