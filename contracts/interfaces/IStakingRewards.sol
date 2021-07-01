@@ -4,11 +4,11 @@ interface IStakingRewards {
     //Views
     function lastTimeRewardApplicable() external view returns (uint256);
 
-    function rewardPerToken(address rewardToken) external view returns (uint256);
+    function rewardPerToken() external view returns (uint256);
 
-    function earned(address account, address rewardToken) external view returns (uint256);
+    function earned(address account) external view returns (uint256);
 
-    function getRewardForDuration(address rewardToken) external view returns (uint256);
+    function getRewardForDuration() external view returns (uint256);
 
     function totalSupply() external view returns (uint256);
 
@@ -19,7 +19,7 @@ interface IStakingRewards {
 
     function withdraw(uint256 amount) external;
 
-    function getReward(uint256 amount) external;
+    function getReward() external;
 
     function exit() external;
 }
