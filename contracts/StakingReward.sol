@@ -153,7 +153,7 @@ contract StakingReward is
         }
         if (claimedSplitsForUser < splits) {
             uint256 currentSplit = (currentDate.sub(periodFinish)).div(splitWindow);
-            currentSplit = currentSplit > splits ? splits: currentDate;
+            currentSplit = currentSplit > splits ? splits: currentSplit;
             reward = reward.add(
                 totalVestedRewardForUser[_msgSender()].mul(currentSplit.sub(claimedSplitsForUser)).div(splits)
             );
@@ -167,6 +167,7 @@ contract StakingReward is
             }
         }
     }
+
     function exit() external override {
         withdraw(_balances[_msgSender()]);
         if (block.timestamp >= periodFinish) getReward();
@@ -205,13 +206,11 @@ contract StakingReward is
 
     /*===================MODIFIERS================*/
     modifier updateReward(address account) {
-        for (uint256 i = 0; i < rewardTokens.length; i++) {
-            rewardsPerTokenMap[rewardTokens[i]] = rewardPerToken(rewardTokens[i]);
-            rewardLastUpdatedTime[rewardTokens[i]] = lastTimeRewardApplicable();
-            if (account != address(0)) {
-                rewards[account][rewardTokens[i]] = earned(account, rewardTokens[i]);
-                userRewardPerTokenPaid[account][rewardTokens[i]] = rewardsPerTokenMap[rewardTokens[i]];
-            }
+        rewardPerTokenStored = rewardPerToken();
+        lastUpdateTime = lastTimeRewardApplicable();
+        if (account != address(0)) {
+            rewards[account] = earned(account);
+            userRewardPerTokenPaid[account] = rewardPerTokenStored;
         }
         _;
     }
