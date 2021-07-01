@@ -13,7 +13,7 @@ contract StakingRewardsFactory is Ownable {
     address public rewardToken;
     uint256 public stakingRewardGenesis;
 
-    //the staking tokens for which the rewards contract has been deployed
+    //the staking tokens for which this factory deployed
     address[] public stakingTokens;
 
     //info about rewards for a particular staking token
@@ -36,7 +36,7 @@ contract StakingRewardsFactory is Ownable {
 
     //===================PERMISSIONED FUNCTIONS====================
     /**
-     * @dev Deploy a StakingReward Contract for a particular stakingToken
+     * @notice Deploy a StakingReward Contract for a particular stakingToken
      * @param stakingToken Token that stakers stake into the farm
      * @param rewardAmount Amount of StakingRewardFactory contract token left for StakingReward contract
      * @param rewardDuraton Time for staker to stake and earn rewardToken
@@ -75,7 +75,7 @@ contract StakingRewardsFactory is Ownable {
 
     //========================PERMISIONLESS FUNCTIONS============================
     /**
-     * @dev Call notifyRewardAmount for all stakingToken that already deployed by this factory
+     * @notice Call notifyRewardAmount for all stakingToken that already deployed by this factory
      */
     function notifyRewardAmounts() public {
         require(stakingTokens.length > 0, 'StakingRewardFactory::notifyRewardAmount: no deployed');
@@ -85,7 +85,7 @@ contract StakingRewardsFactory is Ownable {
     }
 
     /**
-     * @dev Notify reward amount for a StakingReward corresponding with stakingToken
+     * @notice Notify reward amount for a StakingReward corresponding with stakingToken
      * transfer info.rewardAmount to StakingReward
      */
     function notifyRewardAmount(address stakingToken) public {
@@ -104,7 +104,7 @@ contract StakingRewardsFactory is Ownable {
     }
 
     /**
-     * @dev Rescue leftover fund from pool
+     * @notice Rescue leftover fund from pool that has been deployed
      * @param stakingToken stakingToken in the pool that we want to rescue fund
      * @param tokenAddress address of the token we want to rescue
      */
@@ -115,7 +115,7 @@ contract StakingRewardsFactory is Ownable {
     }
 
     /**
-     * @dev Rescue leftover fund from this factory
+     * @notice Rescue leftover fund from this factory
      * @param tokenAddress address of the token we want to rescue
      */
     function rescueFactoryFunds(address tokenAddress) public onlyOwner {

@@ -47,6 +47,16 @@ contract StakingReward is
 
     //==================== CONSTRUCTOR ====================
 
+    /**
+     * @notice constructor to construct a StakingReward
+     * @dev _rewardDistributor  it is StakingRewardFactory contract in this case
+     * @dev _rewardToken  token we want to reward for user
+     * @dev _stakingToken  LP token we want everyone to stake
+     * @dev _rewardDuration  Duration (in seconds) we want people to stake
+     * @dev _vestingPeriod  period time (in seconds)  we release the reward
+     * @dev _splits number of times we release the reward 
+     * @dev _claimable percentage of reward we can get in each realease
+     */
     constructor(
         address _rewardDistributor,
         address _rewardToken,
@@ -68,18 +78,30 @@ contract StakingReward is
     }
 
     //==================== VIEWS ====================
+    /**
+     * @return number of total LP token have been staked
+     */
     function totalSupply() external view override returns (uint256) {
         return _totalSupply;
     }
 
+    /**
+     * @return number of LP token a particular account staked
+     */
     function balanceOf(address account) external view override returns (uint256) {
         return _balances[account];
     }
 
+    /**
+     * @return the lasttime reward info has updated
+     */
     function lastTimeRewardApplicable() public view override returns (uint256) {
         return block.timestamp < periodFinish ? block.timestamp : periodFinish;
     }
 
+    /**
+     *@return number of reward for each LP token in each second
+     */
     function rewardPerToken() public view override returns (uint256) {
         if (_totalSupply == 0) {
             return rewardPerTokenStored;
@@ -90,6 +112,9 @@ contract StakingReward is
             );
     }
 
+    /**
+     * the reward staker can earned in this time
+     */
     function earned(address account) public view override returns (uint256) {
         return
             _balances[account].mul(rewardPerToken().sub(userRewardPerTokenPaid[account])).div(1e18)
@@ -107,6 +132,14 @@ contract StakingReward is
 
     //==================== MUTATIVE FUNCTIONS ==================== 
 
+    /**
+     * @notice Stake into the farm using off-chain message
+     * @dev amount Amount of LP token
+     * @dev expired time of off-chain meesage
+     * @dev v part of signature
+     * @dev r part of signature
+     * @dev s part of signature
+     */
     function stakeWithPermit(
         uint256 amount,
         uint256 deadline,
@@ -123,6 +156,11 @@ contract StakingReward is
         emit Staked(_msgSender(), amount);
     }
 
+    /**
+     * @notice Stake into the farm using on-chain message
+     * @dev Staker must approve for contract for taking amount of LP token
+     * @param amount Amount of LP token 
+     */
     function stake(uint256 amount) external override nonReentrant updateReward(_msgSender()) {
         require(amount > 0, 'Cannot stake 0');
         _totalSupply.add(amount);
@@ -131,6 +169,10 @@ contract StakingReward is
         emit Staked(_msgSender(), amount);
     }
 
+    /**
+     * @notice Withdraw LP token out of the farm
+     * @param amount Amount of LP token that we want to withdraw
+     */
     function withdraw(uint256 amount) external override nonReentrant updateReward(_msgSender()) {
         require(amount > 0, 'Cannot withdraw 0');
         _totalSupply = _totalSupply.sub(amount);
@@ -139,6 +181,9 @@ contract StakingReward is
         emit Withdrawn(_msgSender(), amount);
     }
 
+    /**
+     * @notice staker get reward out of the farm, can get part of the reward in each release
+     */
     function getReward() public override nonReentrant updateReward(_msgSender()) {
         require(block.timestamp >= periodFinish, 'Cannot claims token now');
 
@@ -168,6 +213,9 @@ contract StakingReward is
         }
     }
 
+    /**
+     * @return Staker exit the farm: Withdraw all LP token and get available reward amount
+     */
     function exit() external override {
         withdraw(_balances[_msgSender()]);
         if (block.timestamp >= periodFinish) getReward();
@@ -205,6 +253,7 @@ contract StakingReward is
     event RewardPaid(address indexed user, uint256 reward);
 
     /*===================MODIFIERS================*/
+
     modifier updateReward(address account) {
         rewardPerTokenStored = rewardPerToken();
         lastUpdateTime = lastTimeRewardApplicable();
