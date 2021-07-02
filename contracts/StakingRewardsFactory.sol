@@ -39,7 +39,7 @@ contract StakingRewardsFactory is Ownable {
      * @notice Deploy a StakingReward Contract for a particular stakingToken
      * @param stakingToken Token that stakers stake into the farm
      * @param rewardAmount Amount of StakingRewardFactory contract token left for StakingReward contract
-     * @param rewardDuraton Time for staker to stake and earn rewardToken
+     * @param rewardDuration Time for staker to stake and earn rewardToken
      * @param vestingPeriod Time for staker get reward after rewardDuration
      * @param splits Number of times the reward will be released
      * @param claimable Percentage of amount of total vested reward that a staker can get each time the reward was released

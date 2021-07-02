@@ -121,7 +121,7 @@ contract StakingReward is
             .add(rewards[account]);
     }
 
-    function getRewardForDuration(address rewardToken)
+    function getRewardForDuration()
         external
         view
         override
@@ -173,7 +173,7 @@ contract StakingReward is
      * @notice Withdraw LP token out of the farm
      * @param amount Amount of LP token that we want to withdraw
      */
-    function withdraw(uint256 amount) external override nonReentrant updateReward(_msgSender()) {
+    function withdraw(uint256 amount) public override nonReentrant updateReward(_msgSender()) {
         require(amount > 0, 'Cannot withdraw 0');
         _totalSupply = _totalSupply.sub(amount);
         _balances[_msgSender()] = _balances[_msgSender()].sub(amount);
@@ -206,7 +206,7 @@ contract StakingReward is
             if (claimedSplitsForUser != currentSplit) claimedSplits[_msgSender()] = currentSplit;
             if (reward > 0) {
                 hasClaimed[_msgSender()] = true;
-                rewards[_msgSender()] = reward[_msgSender()].sub(reward);
+                rewards[_msgSender()] = rewards[_msgSender()].sub(reward);
                 rewardToken.safeTransfer(_msgSender(), reward);
                 emit RewardPaid(_msgSender(), reward);
             }
@@ -214,7 +214,7 @@ contract StakingReward is
     }
 
     /**
-     * @return Staker exit the farm: Withdraw all LP token and get available reward amount
+     * @notice Staker exit the farm: Withdraw all LP token and get available reward amount
      */
     function exit() external override {
         withdraw(_balances[_msgSender()]);
@@ -240,7 +240,7 @@ contract StakingReward is
         emit RewardAdded(reward);
     }
 
-    function rescueFunds(address tokenAddress, address receiver) external onlyDistributor {
+    function rescueFunds(address tokenAddress, address receiver) external onlyRewardDistributor {
         require(tokenAddress != address(stakingToken), 'StakingRewards: rescue of staking token not allowed');
         IBEP20(tokenAddress).transfer(receiver, IBEP20(tokenAddress).balanceOf(address(this)));
     }

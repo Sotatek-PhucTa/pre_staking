@@ -5,7 +5,7 @@ abstract contract RewardsDistributionRecipient {
 
     function notifyRewardAmount(uint256 reward) external virtual;
 
-    modifier onlyRewardDitributor() {
+    modifier onlyRewardDistributor() {
         require(msg.sender == rewardDistributor, "Caller is not RewardDistributor contract");
         _;
     }
