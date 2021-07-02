@@ -2,11 +2,13 @@ pragma solidity >=0.6.11;
 
 import "@pancakeswap/pancake-swap-lib/contracts/token/BEP20/IBEP20.sol";
 import "@pancakeswap/pancake-swap-lib/contracts/access/Ownable.sol";
+import "solidity-util/lib/Integers.sol";
 
 import "./StakingReward.sol";
 
 contract StakingRewardsFactory is Ownable {
 
+    using Integers for uint256;
     //===================STATE VARIABLES====================
 
     //Address of token that reward to stakers
@@ -28,7 +30,8 @@ contract StakingRewardsFactory is Ownable {
     mapping(address => StakingRewardInfo) public stakingRewardInfosByStakingToken;
 
     constructor(address _rewardToken, uint256 _stakingRewardGenesis) public Ownable() {
-        require(_stakingRewardGenesis >= block.timestamp, 'StakingRewardFactory::constructor: genesis too soon');
+        require(_stakingRewardGenesis >= block.timestamp, 
+        string(abi.encodePacked(_stakingRewardGenesis.toString(), " ", block.timestamp.toString())));
 
         rewardToken = _rewardToken;
         stakingRewardGenesis = _stakingRewardGenesis;

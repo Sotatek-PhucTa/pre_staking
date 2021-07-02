@@ -25,7 +25,7 @@ contract('FactoryContract', (accounts) => {
         it("should not create a contract", async() => {
             const genesisTime = Date.now() - 7 * 24 * 60 *  60000;   // Sub 10 minute from now
             console.log(genesisTime);
-            const factoryInstance = await FactoryContract.new(simulateRewardToken, genesisTime, {from: creator});
+            const factoryInstance = await FactoryContract.new(simulateRewardToken, 100, {from: creator});
             // const factoryInstance = await FactoryContract.new(simulateRewardToken, genesisTime, {from: creator});
             const gt = await factoryInstance.stakingRewardGenesis();
             console.log(Number(gt));

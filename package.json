@@ -3,6 +3,7 @@
     "@pancakeswap/pancake-swap-lib": "^0.0.4",
     "@truffle/hdwallet-provider": "^1.4.1",
     "chai": "^4.3.4",
+    "solidity-util": "github:willitscale/solidity-util",
     "truffle": "^5.3.14",
     "truffle-hdwallet-provider": "^1.0.17"
   }
