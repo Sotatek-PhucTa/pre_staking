@@ -5,5 +5,8 @@
     "chai": "^4.3.4",
     "truffle": "^5.3.14",
     "truffle-hdwallet-provider": "^1.0.17"
+  },
+  "devDependencies": {
+    "@openzeppelin/test-helpers": "^0.5.11"
   }
 }
