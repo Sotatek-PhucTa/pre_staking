@@ -1,14 +1,14 @@
 const FactoryContract = artifacts.require("StakingRewardsFactory");
 const expect = require('chai').expect;
 const utils = require('./helper/utils');
+const { time } = require('@openzeppelin/test-helpers');
 
 contract('FactoryContract', (accounts) => {
 
     context("#About constructor", async() => {
         const [creator, simulateRewardToken] = accounts;
-        const timezoneOffset = new Date().getTimezoneOffset() * 60000;
-        xit("should create contract successfully", async () => {
-            const genesisTime = Date.now() + 10 * 60000;   //Add 10 minutes from now and ourtimezone;
+        it("should create contract successfully", async () => {
+            const genesisTime = Number(await time.latest()) + 10 * 60000   //Add 10 minutes from now and ourtimezone;
             const factoryInstance = await FactoryContract.new(simulateRewardToken, genesisTime, {from: creator});
 
             // Instance should be success
@@ -23,13 +23,9 @@ contract('FactoryContract', (accounts) => {
         });
 
         it("should not create a contract", async() => {
-            const genesisTime = Date.now() - 7 * 24 * 60 *  60000;   // Sub 10 minute from now
-            console.log(genesisTime);
-            const factoryInstance = await FactoryContract.new(simulateRewardToken, genesisTime, {from: creator});
-            // const factoryInstance = await FactoryContract.new(simulateRewardToken, genesisTime, {from: creator});
-            const gt = await factoryInstance.stakingRewardGenesis();
-            console.log(Number(gt));
-            console.log(factoryInstance.address);
+            const genesisTime = Number(await time.latest()) - 10 * 60000;   // Sub 10 minute from now
+            const result = await utils.shouldThrow(FactoryContract.new(simulateRewardToken, genesisTime, {from: creator}));
+            expect(result).equals(true);
         })
     });
 
