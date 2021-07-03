@@ -165,9 +165,9 @@ contract StakingReward is
      */
     function stake(uint256 amount) external override nonReentrant updateReward(_msgSender()) {
         require(amount > 0, 'Cannot stake 0');
-        _totalSupply.add(amount);
+        _totalSupply = _totalSupply.add(amount);
         _balances[_msgSender()] = _balances[_msgSender()].add(amount);
-        require(1 > 2, string(abi.encodePacked("Total supply ", _totalSupply.toString())));
+        // require(1 > 2, string(abi.encodePacked("Total supply ", amount.toString(),", ", _totalSupply.toString())));
         stakingToken.safeTransferFrom(_msgSender(), address(this), amount);
         emit Staked(_msgSender(), amount);
     }
