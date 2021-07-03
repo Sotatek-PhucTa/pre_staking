@@ -56,10 +56,8 @@ contract("StakingReward", async(accounts) => {
             const balanceInFarm = Number(await farmInstance.balanceOf(staker1, { from: staker1}));
             expect(balanceInFarm).equals(100);
 
-            const totalSupply = await farmInstance.totalSupply({ from: staker1 });
-            console.log(Number(totalSupply));
-            // expect(Number(await farmInstance.totalSupply({ from: staker1}))).equals(100);
-        })
-
+            const totalSupply = Number(await farmInstance.totalSupply({ from: staker1 }));
+            expect(totalSupply).equals(100);
+        });
     });
 })
