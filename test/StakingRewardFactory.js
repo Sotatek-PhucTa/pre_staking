@@ -1,5 +1,4 @@
 const expect = require('chai').expect;
-const utils = require('./helper/utils');
 const { time, expectRevert } = require('@openzeppelin/test-helpers');
 
 const FactoryContract = artifacts.require("StakingRewardsFactory");
@@ -7,7 +6,7 @@ const StakingReward = artifacts.require("StakingReward");
 const TestBEP20 = artifacts.require("TestBEP20");
 
 contract('FactoryContract', (accounts) => {
-    context("#About constructor", async() => {
+    xcontext("#About constructor", async() => {
         const [creator, simulateRewardToken] = accounts;
         it("should create contract successfully", async () => {
             const genesisTime = Number(await time.latest()) + 10 * 60 * 1000  //Add 10 minutes from now and ourtimezone;
@@ -30,7 +29,7 @@ contract('FactoryContract', (accounts) => {
         })
     });
 
-    context("#Create a single Farm", async() => {
+    xcontext("#Create a single Farm", async() => {
         const [creator, simulateRewardToken, simulateStakingToken, creator1] = accounts;
         let factoryInstance;
         const rewardAmount = 600;
@@ -79,7 +78,7 @@ contract('FactoryContract', (accounts) => {
         })
     });
     
-    context("#Create two farm", async () => {
+    xcontext("#Create two farm", async () => {
         const [creator, simulateRewardToken, simulateStakingToken, simulateStakingToken1] = accounts;
         const rewardAmount = 600;
         const rewardDuration = 600;
@@ -99,7 +98,7 @@ contract('FactoryContract', (accounts) => {
             expect(await factoryInstance.stakingTokens(1)).equals(simulateStakingToken1); })
     })        
 
-    it("#Deploy an BEP20 token", async() => {
+    xit("#Deploy an BEP20 token", async() => {
         const [creator, receiver] = accounts;
         const token1 = await TestBEP20.new(1000, {from: creator});
         expect(await token1.getOwner()).equals(creator);
@@ -108,7 +107,7 @@ contract('FactoryContract', (accounts) => {
         expect(Number(await token1.balanceOf(receiver, {from: creator}))).equals(400);
 
     })
-    context("#Deploy and call notifyRewardsAmount", async() => {
+    xcontext("#Deploy and call notifyRewardsAmount", async() => {
         let rewardTokenInstance, factoryInstance;
         const [rewardTokenCreator, factoryCreator, simulateStakingToken] = accounts;
         const rewardAmount = 600;
