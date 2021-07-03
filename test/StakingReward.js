@@ -19,7 +19,7 @@ contract("StakingReward", async(accounts) => {
     const claimable = 20;
 
 
-    xcontext("Single person stake into the pool", async() => {
+    context("Single person stake into the pool", async() => {
         beforeEach(async() => {
             const genesisTime = Number(await time.latest()) + 10 * 1000;
 
