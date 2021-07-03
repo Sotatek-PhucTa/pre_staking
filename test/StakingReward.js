@@ -17,14 +17,14 @@ contract("StakingReward", async(accounts) => {
 
     context("Single person stake into the pool", async() => {
         beforeEach(async() => {
-            const genesisTime = await time.latest() + 10 * 1000;
+            const genesisTime = Number(await time.latest()) + 10 * 1000;
 
             // Create reward token and staking token
             rewardToken = await TestBEP20.new(1000000, { from: tokenCreator});
             stakingToken = await TestBEP20.new(1000000, { from: tokenCreator});
 
             // Create a factory instance and transfer for it 600 reward token
-            factoryInstance = await FactoryContract.new(rewardToken, genesisTime, { from: factoryCreator});
+            factoryInstance = await FactoryContract.new(rewardToken.address, genesisTime, { from: factoryCreator});
             await rewardToken.transfer(factoryInstance.address, 600, { from: tokenCreator});
 
             // Create a farm and call deploy
@@ -32,9 +32,34 @@ contract("StakingReward", async(accounts) => {
             await factoryInstance.deploy(...deployParams, {from: factoryCreator});
             const farmInfo = await factoryInstance.stakingRewardInfosByStakingToken(stakingToken.address);
             farmInstance = await StakingReward.at(farmInfo.stakingReward);
+
+            // Transfer for staker 
+            await stakingToken.transfer(staker1, 100, { from: tokenCreator });
         });
 
         it("initialization should be true", async() => {
+            expect(Number(await rewardToken.balanceOf(factoryInstance.address))).equals(600);
+            const balanceOfStaker = Number(await stakingToken.balanceOf(staker1, { from: staker1}));
+            expect(balanceOfStaker).equals(100);
+        });
+
+        it("Stake into the farm", async() => {
+            const balanceBeforeStake = Number(await stakingToken.balanceOf(staker1, {from: staker1}));
+            expect(balanceBeforeStake).equals(100);
+
+            await stakingToken.approve(farmInstance.address, 100, { from: staker1});
+            await farmInstance.stake(100, { from: staker1 });
+            // await farmInstance.stake(100, { from: staker1 });
+            const balanceAfterStake = Number(await stakingToken.balanceOf(staker1));
+            expect(balanceAfterStake).equals(0);
+
+            const balanceInFarm = Number(await farmInstance.balanceOf(staker1, { from: staker1}));
+            expect(balanceInFarm).equals(100);
+
+            const totalSupply = await farmInstance.totalSupply({ from: staker1 });
+            console.log(Number(totalSupply));
+            // expect(Number(await farmInstance.totalSupply({ from: staker1}))).equals(100);
         })
+
     });
 })
