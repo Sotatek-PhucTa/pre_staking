@@ -127,17 +127,7 @@ contract('FactoryContract', (accounts) => {
 
         it("Should not deploy by others than owner", async() => {
             const deployParams = [simulateStakingToken, rewardAmount, rewardDuration, vestingPeriod, splits, claimable];
-<<<<<<< HEAD
-            const result = await utils.shouldThrow(factoryInstance.deploy(...deployParams, {from: rewardTokenCreator}));
-            expect(result).equals(true);
-        });
-
-        it("Should not deploy by others than owner 2", async() => {
-            const deployParams = [simulateStakingToken, rewardAmount, rewardDuration, vestingPeriod, splits, claimable];
-            await expectRevert(factoryInstance.deploy(...deployParams, {from: rewardTokenCreator}), "Ownable kk");
-=======
             await expectRevert(factoryInstance.deploy(...deployParams, {from: rewardTokenCreator}), "Ownable: caller is not the owner");
->>>>>>> master
         });
 
         it("Call notifyRewardAmounts() success", async() => {

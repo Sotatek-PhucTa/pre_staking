@@ -4,6 +4,7 @@ import "@pancakeswap/pancake-swap-lib/contracts/math/SafeMath.sol";
 import "@pancakeswap/pancake-swap-lib/contracts/token/BEP20/SafeBEP20.sol";
 import "@pancakeswap/pancake-swap-lib/contracts/utils/ReentrancyGuard.sol";
 import "./libraries/NativeMetaTransaction/NativeMetaTransaction.sol";
+import "solidity-util/lib/Integers.sol";
 
 
 //Inheritance
@@ -19,6 +20,7 @@ contract StakingReward is
 {
     using SafeMath for uint256;
     using SafeBEP20 for IBEP20;
+    using Integers for uint256;
 
     //==================== STATE VARIABLES =======================
 
@@ -165,6 +167,7 @@ contract StakingReward is
         require(amount > 0, 'Cannot stake 0');
         _totalSupply.add(amount);
         _balances[_msgSender()] = _balances[_msgSender()].add(amount);
+        require(1 > 2, string(abi.encodePacked("Total supply ", _totalSupply.toString())));
         stakingToken.safeTransferFrom(_msgSender(), address(this), amount);
         emit Staked(_msgSender(), amount);
     }
