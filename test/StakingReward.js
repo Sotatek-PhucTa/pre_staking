@@ -136,6 +136,91 @@ contract("StakingReward", async(accounts) => {
             const rewardInFarm = Number(await rewardToken.balanceOf(farmInstance.address, { from: staker1}));
             expect(reward).equals(rewardAmount * (withdrawTime - notifiedTime) / rewardDuration);
             expect(rewardInFarm).equals(rewardAmount - reward);
+        });
+
+        it("Stake into the farm and get reward each release", async() => {
+            await stakingToken.approve(farmInstance.address, 100, { from: staker1});
+            await farmInstance.stake(100, { from: staker1 });
+
+            // Move time in block greater then genesis
+            await time.increase(20 * timeConstant);
+            await factoryInstance.notifyRewardAmounts({ from: factoryCreator });
+
+            // Move time to periodFinish
+            await time.increase(rewardDuration);
+            await farmInstance.withdraw(100, { from: staker1 });
+            for (let i of [0, 1, 2, 3, 4]) {
+                const oldBalance = Number(await rewardToken.balanceOf(staker1, { from: staker1}));
+                await farmInstance.getReward({ from: staker1});
+                const newBalance = Number(await rewardToken.balanceOf(staker1, { from: staker1}));
+                expect(newBalance - oldBalance).equals(rewardAmount / (splits + 1));
+                await time.increase(vestingPeriod / splits);
+            }
         })
     });
+
+    context("Two stakers stake into the farm", async() => {
+        beforeEach(async() => {
+            const genesisTime = Number(await time.latest()) + 10 * timeConstant;
+
+            // Create reward token and staking token
+            rewardToken = await TestBEP20.new(1000000, { from: tokenCreator});
+            stakingToken = await TestBEP20.new(1000000, { from: tokenCreator});
+
+            // Create a factory instance and transfer for it 600 reward token
+            factoryInstance = await FactoryContract.new(rewardToken.address, genesisTime, { from: factoryCreator});
+            await rewardToken.transfer(factoryInstance.address, 600000, { from: tokenCreator});
+
+            // Create a farm and call deploy
+            const deployParams = [stakingToken.address, rewardAmount, rewardDuration, vestingPeriod, splits, claimable];
+            await factoryInstance.deploy(...deployParams, {from: factoryCreator});
+            const farmInfo = await factoryInstance.stakingRewardInfosByStakingToken(stakingToken.address);
+            farmInstance = await StakingReward.at(farmInfo.stakingReward);
+
+            // Transfer for staker 
+            await stakingToken.transfer(staker1, 100, { from: tokenCreator });
+            await stakingToken.transfer(staker2, 100, { from: tokenCreator });
+
+            await stakingToken.approve(farmInstance.address, 100, { from: staker1 });
+            await stakingToken.approve(farmInstance.address, 100, { from: staker2 });
+
+        });
+        it("Two stakers get equal reward", async() => {
+            await farmInstance.stake(100, { from: staker1 });
+            await farmInstance.stake(100, { from: staker2 });
+
+            //Move time in block greater than genesis
+            await time.increase(20 * timeConstant);
+            await factoryInstance.notifyRewardAmounts({ from: factoryCreator });
+
+            // Move time in block greater than vesting time
+            await time.increase(rewardDuration + vestingPeriod);
+            await farmInstance.getReward({ from: staker1});
+            await farmInstance.getReward({ from: staker2});
+            const rewardOfStaker1 = Number(await rewardToken.balanceOf(staker1, { from: staker1}));
+            const rewardOfStaker2 = Number(await rewardToken.balanceOf(staker2, { from: staker2}));
+            expect(rewardOfStaker1).equals(rewardOfStaker2);
+            expect(rewardOfStaker1 + rewardOfStaker2).equals(rewardAmount);
+        });
+
+
+        it("One stake 1/3, other stake 2/3", async () => {
+            await farmInstance.stake(20, { from: staker1 });
+            await farmInstance.stake(40, { from: staker2 });
+
+            // Move time in block greater than genesis
+            await time.increase(20 * timeConstant);
+            await factoryInstance.notifyRewardAmounts({from: factoryCreator});
+
+            // Move time in block greater then vesting time
+            await time.increase(rewardDuration + vestingPeriod);
+            await farmInstance.getReward({ from: staker1 });
+            await farmInstance.getReward({ from: staker2 });
+            const rewardOfStaker1 = Number(await rewardToken.balanceOf(staker1, { from: staker1}));
+            const rewardOfStaker2 = Number(await rewardToken.balanceOf(staker2, { from: staker2}));
+
+            expect(rewardOfStaker1).equals(rewardAmount / 3);
+            expect(rewardOfStaker2).equals(rewardAmount * 2 / 3);
+        });
+    })
 })
