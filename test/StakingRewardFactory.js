@@ -25,19 +25,9 @@ contract('FactoryContract', (accounts) => {
         });
 
         it("should not create a contract", async() => {
-<<<<<<< HEAD
-            const genesisTime = Date.now() - 7 * 24 * 60 *  60000;   // Sub 10 minute from now
-            console.log(genesisTime);
-            const factoryInstance = await FactoryContract.new(simulateRewardToken, 100, {from: creator});
-            // const factoryInstance = await FactoryContract.new(simulateRewardToken, genesisTime, {from: creator});
-            const gt = await factoryInstance.stakingRewardGenesis();
-            console.log(Number(gt));
-            console.log(factoryInstance.address);
-=======
             const genesisTime = Number(await time.latest()) - 10 * 60 * 1000;   // Sub 10 minute from now
             const result = await utils.shouldThrow(FactoryContract.new(simulateRewardToken, genesisTime, {from: creator}));
             expect(result).equals(true);
->>>>>>> master
         })
     });
 
@@ -142,7 +132,7 @@ contract('FactoryContract', (accounts) => {
 
         it("Should not deploy by others than owner 2", async() => {
             const deployParams = [simulateStakingToken, rewardAmount, rewardDuration, vestingPeriod, splits, claimable];
-            await expectRevert(factoryInstance.deploy(...deployParams, {from: rewardTokenCreator}), "Ownable");
+            await expectRevert(factoryInstance.deploy(...deployParams, {from: rewardTokenCreator}), "Ownable kk");
         });
 
         xit("Call notifyRewardAmounts() success", async() => {
