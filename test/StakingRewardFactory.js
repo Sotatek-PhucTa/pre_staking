@@ -1,13 +1,13 @@
 const expect = require('chai').expect;
 const utils = require('./helper/utils');
-const { time } = require('@openzeppelin/test-helpers');
+const { time, expectRevert } = require('@openzeppelin/test-helpers');
 
 const FactoryContract = artifacts.require("StakingRewardsFactory");
 const StakingReward = artifacts.require("StakingReward");
 const TestBEP20 = artifacts.require("TestBEP20");
 
 contract('FactoryContract', (accounts) => {
-    context("#About constructor", async() => {
+    xcontext("#About constructor", async() => {
         const [creator, simulateRewardToken] = accounts;
         it("should create contract successfully", async () => {
             const genesisTime = Number(await time.latest()) + 10 * 60 * 1000  //Add 10 minutes from now and ourtimezone;
@@ -31,7 +31,7 @@ contract('FactoryContract', (accounts) => {
         })
     });
 
-    context("#Create a single Farm", async() => {
+    xcontext("#Create a single Farm", async() => {
         const [creator, simulateRewardToken, simulateStakingToken, creator1] = accounts;
         let factoryInstance;
         const rewardAmount = 600;
@@ -65,7 +65,7 @@ contract('FactoryContract', (accounts) => {
             expect(Number(farmIntanceInfo.claimable)).equals(claimable);
         });
 
-        it("should deploy contract with same Staking token", async() => {
+        it("should not deploy contract with same Staking token", async() => {
             await factoryInstance.deploy(...deployParams, { from: creator });
             const result = await utils.shouldThrow(factoryInstance.deploy(...deployParams, { from: creator}));
             expect(result).equals(true);
@@ -78,7 +78,7 @@ contract('FactoryContract', (accounts) => {
         })
     });
     
-    context("#Create two farm", async () => {
+    xcontext("#Create two farm", async () => {
         const [creator, simulateRewardToken, simulateStakingToken, simulateStakingToken1] = accounts;
         const rewardAmount = 600;
         const rewardDuration = 600;
@@ -107,36 +107,85 @@ contract('FactoryContract', (accounts) => {
 
     })
     context("#Deploy and call notifyRewardsAmount", async() => {
-        let rewardTokenInstance, factoryInstance, genesisTime;
+        let rewardTokenInstance, factoryInstance;
         const [rewardTokenCreator, factoryCreator, simulateStakingToken] = accounts;
         const rewardAmount = 600;
         const rewardDuration = 600;
         const vestingPeriod = 1200;
         const splits = 4;
         const claimable = 20;
-        const deployParams = [simulateStakingToken, rewardAmount, rewardDuration, vestingPeriod, splits, claimable];
 
         beforeEach(async() => {
             rewardTokenInstance = await TestBEP20.new(1000, {from: rewardTokenCreator});
             await rewardTokenInstance.transfer(factoryCreator, 600, { from: rewardTokenCreator});
             // const genesisTime = Number(await time.latest() + 1 * 1000);  //Add 10 miliseconds
-            genesisTime = Number(await time.latest()) + 10 * 1000;  //Add 10 seconds
+            const genesisTime = Number(await time.latest()) + 10 * 1000;  //Add 10 seconds
             factoryInstance = await FactoryContract.new(rewardTokenInstance.address, genesisTime, {from: factoryCreator});
             await rewardTokenInstance.transfer(factoryInstance.address, 600, {from: factoryCreator})
         });
 
-        it("Create a new farm", async() => {
+        it("Should not deploy by others than owner", async() => {
+            const deployParams = [simulateStakingToken, rewardAmount, rewardDuration, vestingPeriod, splits, claimable];
+            const result = await utils.shouldThrow(factoryInstance.deploy(...deployParams, {from: rewardTokenCreator}));
+            expect(result).equals(true);
+        });
+
+        it("Should not deploy by others than owner 2", async() => {
+            const deployParams = [simulateStakingToken, rewardAmount, rewardDuration, vestingPeriod, splits, claimable];
+            await expectRevert(factoryInstance.deploy(...deployParams, {from: rewardTokenCreator}), "Ownable");
+        });
+
+        xit("Call notifyRewardAmounts() success", async() => {
+            const deployParams = [simulateStakingToken, rewardAmount, rewardDuration, vestingPeriod, splits, claimable];
             await factoryInstance.deploy(...deployParams, {from: factoryCreator});
             const farmInfo = await factoryInstance.stakingRewardInfosByStakingToken(simulateStakingToken);
             const farmAddress = farmInfo.stakingReward;
-            const farmInstance = await StakingReward.at(farmInfo.stakingReward);
-            const balance1 = Number(await rewardTokenInstance.balanceOf(farmAddress));
-            expect(balance1).equals(0);
 
+            // Before call notifyRewardAmounts(), balance of farmAddress is 0
+            const balanceFarmBeforeCall = Number(await rewardTokenInstance.balanceOf(farmAddress));
+            expect(balanceFarmBeforeCall).equals(0);
+
+            // After call notifyRewardAmounts(), balance of farmAddress is equal to rewardAmount
             await time.increase(30 * 1000);   //Add 30 seconds
             await factoryInstance.notifyRewardAmounts({from: factoryCreator});
-            const balance2 = Number(await rewardTokenInstance.balanceOf(farmAddress));
-            expect(balance2).equals(rewardAmount);
+            const balanceFarmAfterCall = Number(await rewardTokenInstance.balanceOf(farmAddress));
+            expect(balanceFarmAfterCall).equals(rewardAmount);
+
+            // After call notifyRewardAmountts(), rewardAmount for farmInstance should be 0
+            const rewardInfoAfterCalled = Number((await factoryInstance.stakingRewardInfosByStakingToken(simulateStakingToken)).rewardAmount);
+            expect(rewardInfoAfterCalled).equals(0);
+        });
+
+        xit("Should call notifyRewardAmounts(stakingToken) success", async() => {
+            const deployParams = [simulateStakingToken, rewardAmount, rewardDuration, vestingPeriod, splits, claimable];
+            await factoryInstance.deploy(...deployParams, {from: factoryCreator});
+            const farmInfo = await factoryInstance.stakingRewardInfosByStakingToken(simulateStakingToken);
+            const farmAddress = farmInfo.stakingReward;
+
+            // Before call notifyRewardAmounts(), balance of farmAddress is 0
+            const balanceFarmBeforeCall = Number(await rewardTokenInstance.balanceOf(farmAddress));
+            expect(balanceFarmBeforeCall).equals(0);
+
+            // After call notifyRewardAmounts(), balance of farmAddress is equal to rewardAmount
+            await time.increase(30 * 1000);   //Add 30 seconds
+            await factoryInstance.notifyRewardAmount(simulateStakingToken, {from: factoryCreator});
+            const balanceFarmAfterCall = Number(await rewardTokenInstance.balanceOf(farmAddress));
+            expect(balanceFarmAfterCall).equals(rewardAmount);
+
+            // After call notifyRewardAmountts(), rewardAmount for farmInstance should be 0
+            const rewardInfoAfterCalled = Number((await factoryInstance.stakingRewardInfosByStakingToken(simulateStakingToken)).rewardAmount);
+            expect(rewardInfoAfterCalled).equals(0);
+        });
+
+        it("Should call notifyRewardAmount failed", async() => {
+            //rewardAmount > currentBalance in factoryContract
+            const deployParams = [simulateStakingToken, rewardAmount + 1, rewardDuration, vestingPeriod, splits, claimable];
+            await factoryInstance.deploy(...deployParams, {from: factoryCreator});
+            const farmInfo = await factoryInstance.stakingRewardInfosByStakingToken(simulateStakingToken);
+            const farmAddress = farmInfo.stakingReward;
+
+            await time.increase(30 * 1000);     //Add 30 seconds
+            const result = await utils.shouldThrow(factoryInstance.notifyRewardAmounts({from: factoryCreator}));
         });
     });
 });
