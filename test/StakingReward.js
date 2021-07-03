@@ -37,13 +37,13 @@ contract("StakingReward", async(accounts) => {
             await stakingToken.transfer(staker1, 100, { from: tokenCreator });
         });
 
-        it("initialization should be true", async() => {
+        xit("initialization should be true", async() => {
             expect(Number(await rewardToken.balanceOf(factoryInstance.address))).equals(600);
             const balanceOfStaker = Number(await stakingToken.balanceOf(staker1, { from: staker1}));
             expect(balanceOfStaker).equals(100);
         });
 
-        it("Stake into the farm", async() => {
+        xit("Stake into the farm", async() => {
             const balanceBeforeStake = Number(await stakingToken.balanceOf(staker1, {from: staker1}));
             expect(balanceBeforeStake).equals(100);
 
@@ -59,5 +59,59 @@ contract("StakingReward", async(accounts) => {
             const totalSupply = Number(await farmInstance.totalSupply({ from: staker1 }));
             expect(totalSupply).equals(100);
         });
+
+        xit("Withdraw from the farm", async() => {
+            await stakingToken.approve(farmInstance.address, 100, { from: staker1});
+            await farmInstance.stake(100, { from: staker1 });
+
+            await farmInstance.withdraw(40, { from: staker1});
+            expect(Number(await stakingToken.balanceOf(staker1, { from: staker1}))).equals(40);
+            expect(Number(await stakingToken.balanceOf(farmInstance.address, { from: staker1}))).equals(60);
+            expect(Number(await farmInstance.totalSupply({ from: staker1 }))).equals(60);
+            expect(Number(await farmInstance.balanceOf(staker1, { from: staker1}))).equals(60);
+        })
+
+        xit("Stake into the farm and get all rewards", async() => {
+            await stakingToken.approve(farmInstance.address, 100, { from: staker1});
+            await farmInstance.stake(100, { from: staker1 });
+
+            // Call notifyRewardAmount
+            // Move time in block later than genesis
+            await time.increase(20 * 1000);
+            await factoryInstance.notifyRewardAmounts({ from: factoryCreator });
+
+            // Move time in block later than periodFinsh
+            await time.increase(rewardDuration * 1000);
+            await farmInstance.getReward({from: staker1});
+
+            expect(Number(await rewardToken.balanceOf(staker1, {from: staker1}))).equals(rewardAmount);
+            expect(Number(await rewardToken.balanceOf(farmInstance.address, { from: staker1 }))).equals(0);
+        });
+
+        it("Stake into the farm and withdraw after half of time", async() => {
+            await stakingToken.approve(farmInstance.address, 100, { from: staker1});
+            await farmInstance.stake(100, { from: staker1 });
+
+            // Call notifyRewardAmount
+            // Move time in block later than genesis
+            console.log("before time " + await time.latest());
+            await time.increase(20 * 1000);
+            // console.log("after time " + await time.latest())
+            await factoryInstance.notifyRewardAmounts({ from: factoryCreator });
+            console.log("Period finish " + Number(await farmInstance.periodFinish({ from: factoryCreator})));
+
+            // Move time into half of the rewardDuration
+            await time.increase(rewardDuration / 2 * 1000);
+            console.log("Time when withdraw " +  Number(await time.latest()));
+            await farmInstance.withdraw(100, { from: staker1});
+            // expect(Number(await farmInstance.balanceOf(staker1))).equals(0);
+
+            // Move time to greater then rewardDuration
+            await time.increase(rewardDuration / 2 * 1000);
+            await farmInstance.getReward({ from: staker1 });
+
+            const reward = Number(await rewardToken.balanceOf(staker1, { from: staker1}));
+            // console.log(Number(reward));
+        })
     });
 })
