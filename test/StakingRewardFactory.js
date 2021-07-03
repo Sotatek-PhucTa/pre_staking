@@ -62,6 +62,10 @@ contract('FactoryContract', (accounts) => {
             expect(Number(farmIntanceInfo.rewardDuration)).equals(rewardDuration);
             expect(Number(farmIntanceInfo.vestingPeriod)).equals(vestingPeriod);
             expect(Number(farmIntanceInfo.claimable)).equals(claimable);
+
+            const farmInstance = await StakingReward.at(farmIntanceInfo.stakingReward);
+            const rewardDistributor = await farmInstance.rewardDistributor();
+            expect(factoryInstance.address).equals(rewardDistributor);
         });
 
         it("should not deploy contract with same Staking token", async() => {
@@ -91,7 +95,8 @@ contract('FactoryContract', (accounts) => {
             await factoryInstance.deploy(...deployParams, {from: creator});
             await factoryInstance.deploy(...deployParams1, {from: creator});
 
-            expect(await factoryInstance.stakingTokens(0)).equals(simulateStakingToken); expect(await factoryInstance.stakingTokens(1)).equals(simulateStakingToken1); })
+            expect(await factoryInstance.stakingTokens(0)).equals(simulateStakingToken); 
+            expect(await factoryInstance.stakingTokens(1)).equals(simulateStakingToken1); })
     })        
 
     it("#Deploy an BEP20 token", async() => {
