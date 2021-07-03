@@ -7,7 +7,7 @@ const StakingReward = artifacts.require("StakingReward");
 const TestBEP20 = artifacts.require("TestBEP20");
 
 contract('FactoryContract', (accounts) => {
-    xcontext("#About constructor", async() => {
+    context("#About constructor", async() => {
         const [creator, simulateRewardToken] = accounts;
         it("should create contract successfully", async () => {
             const genesisTime = Number(await time.latest()) + 10 * 60 * 1000  //Add 10 minutes from now and ourtimezone;
@@ -26,12 +26,11 @@ contract('FactoryContract', (accounts) => {
 
         it("should not create a contract", async() => {
             const genesisTime = Number(await time.latest()) - 10 * 60 * 1000;   // Sub 10 minute from now
-            const result = await utils.shouldThrow(FactoryContract.new(simulateRewardToken, genesisTime, {from: creator}));
-            expect(result).equals(true);
+            await expectRevert(FactoryContract.new(simulateRewardToken, genesisTime, {from: creator}), "StakingRewardFactory::constructor: genesis too soon");
         })
     });
 
-    xcontext("#Create a single Farm", async() => {
+    context("#Create a single Farm", async() => {
         const [creator, simulateRewardToken, simulateStakingToken, creator1] = accounts;
         let factoryInstance;
         const rewardAmount = 600;
@@ -46,8 +45,8 @@ contract('FactoryContract', (accounts) => {
         });
 
         it("should deploy success", async() => {
-            const result = await utils.shouldThrow(factoryInstance.deploy(...deployParams, {from: creator}));
-            expect(result).equals(false);
+            const result = await factoryInstance.deploy(...deployParams, {from: creator});
+            expect(result.receipt.status).equals(true);
         });
 
         it("should deploy with correct param", async() => {
@@ -67,18 +66,16 @@ contract('FactoryContract', (accounts) => {
 
         it("should not deploy contract with same Staking token", async() => {
             await factoryInstance.deploy(...deployParams, { from: creator });
-            const result = await utils.shouldThrow(factoryInstance.deploy(...deployParams, { from: creator}));
-            expect(result).equals(true);
+            await expectRevert(factoryInstance.deploy(...deployParams, {from: creator}), "StakingRewardFactory::deploy: already deployed");
         });
 
         it("should not deploy when sender is not owner", async() => {
             // suppose a random address be sender
-            const result = await utils.shouldThrow(factoryInstance.deploy(...deployParams, { from: creator1}));
-            expect(result).equals(true);
+            await expectRevert(factoryInstance.deploy(...deployParams, {from: creator1}), "Ownable: caller is not the owner");
         })
     });
     
-    xcontext("#Create two farm", async () => {
+    context("#Create two farm", async () => {
         const [creator, simulateRewardToken, simulateStakingToken, simulateStakingToken1] = accounts;
         const rewardAmount = 600;
         const rewardDuration = 600;
@@ -126,16 +123,10 @@ contract('FactoryContract', (accounts) => {
 
         it("Should not deploy by others than owner", async() => {
             const deployParams = [simulateStakingToken, rewardAmount, rewardDuration, vestingPeriod, splits, claimable];
-            const result = await utils.shouldThrow(factoryInstance.deploy(...deployParams, {from: rewardTokenCreator}));
-            expect(result).equals(true);
+            await expectRevert(factoryInstance.deploy(...deployParams, {from: rewardTokenCreator}), "Ownable: caller is not the owner");
         });
 
-        it("Should not deploy by others than owner 2", async() => {
-            const deployParams = [simulateStakingToken, rewardAmount, rewardDuration, vestingPeriod, splits, claimable];
-            await expectRevert(factoryInstance.deploy(...deployParams, {from: rewardTokenCreator}), "Ownable");
-        });
-
-        xit("Call notifyRewardAmounts() success", async() => {
+        it("Call notifyRewardAmounts() success", async() => {
             const deployParams = [simulateStakingToken, rewardAmount, rewardDuration, vestingPeriod, splits, claimable];
             await factoryInstance.deploy(...deployParams, {from: factoryCreator});
             const farmInfo = await factoryInstance.stakingRewardInfosByStakingToken(simulateStakingToken);
@@ -156,7 +147,7 @@ contract('FactoryContract', (accounts) => {
             expect(rewardInfoAfterCalled).equals(0);
         });
 
-        xit("Should call notifyRewardAmounts(stakingToken) success", async() => {
+        it("Should call notifyRewardAmounts(stakingToken) success", async() => {
             const deployParams = [simulateStakingToken, rewardAmount, rewardDuration, vestingPeriod, splits, claimable];
             await factoryInstance.deploy(...deployParams, {from: factoryCreator});
             const farmInfo = await factoryInstance.stakingRewardInfosByStakingToken(simulateStakingToken);
@@ -185,7 +176,7 @@ contract('FactoryContract', (accounts) => {
             const farmAddress = farmInfo.stakingReward;
 
             await time.increase(30 * 1000);     //Add 30 seconds
-            const result = await utils.shouldThrow(factoryInstance.notifyRewardAmounts({from: factoryCreator}));
+            await expectRevert(factoryInstance.notifyRewardAmounts({from: factoryCreator}), "exceed");
         });
     });
 });
