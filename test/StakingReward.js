@@ -19,7 +19,7 @@ contract("StakingReward", async(accounts) => {
     const claimable = 20;
 
 
-    context("Single person stake into the pool", async() => {
+    xcontext("Single person stake into the pool", async() => {
         beforeEach(async() => {
             const genesisTime = Number(await time.latest()) + 10 * 1000;
 
@@ -221,6 +221,34 @@ contract("StakingReward", async(accounts) => {
 
             expect(rewardOfStaker1).equals(rewardAmount / 3);
             expect(rewardOfStaker2).equals(rewardAmount * 2 / 3);
+        });
+
+        it("One stake before notifyTime, and other stake in half of rewardDuration", async() => {
+            await farmInstance.stake(20, { from: staker1 });
+
+            // Move time in block greater than genesis
+            await time.increase(20 * timeConstant);
+            await factoryInstance.notifyRewardAmounts({from: factoryCreator});
+            const notifiedTime = Number(await time.latest());
+
+            // Move time to the half of duration
+            await time.increase(rewardDuration / 2);
+            await farmInstance.stake(20, { from: staker2}) ;
+            const timeOfStaker2Involved = Number(await time.latest());
+
+            // Move time greater than vesting time
+            await time.increase(rewardDuration / 2 + vestingPeriod);
+            await farmInstance.getReward({ from: staker1});
+            await farmInstance.getReward({ from: staker2});
+
+            const rewardOfStaker1 = Number(await rewardToken.balanceOf(staker1, { from: staker1}));
+            const rewardOfStaker2 = Number(await rewardToken.balanceOf(staker2, { from: staker2}));
+
+            const durationOnlyStaker1 = timeOfStaker2Involved - notifiedTime;
+            const durationBothStaker = rewardDuration - durationOnlyStaker1;
+            expect(rewardOfStaker1).equals(rewardAmount * durationOnlyStaker1 / rewardDuration
+                                    + rewardAmount * durationBothStaker / 2 / rewardDuration);
+            expect(rewardOfStaker2).equals(rewardAmount * durationBothStaker / 2 / rewardDuration);
         });
     })
 })
