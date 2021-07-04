@@ -19,7 +19,7 @@ contract("StakingReward", async(accounts) => {
     const claimable = 20;
 
 
-    context("Single person stake into the pool", async() => {
+    xcontext("Single person stake into the pool", async() => {
         beforeEach(async() => {
             const genesisTime = Number(await time.latest()) + 10 * 1000;
 
@@ -159,7 +159,37 @@ contract("StakingReward", async(accounts) => {
         })
     });
 
-    context("Two stakers stake into the farm", async() => {
+    context("Stake with permit", async() => {
+        beforeEach(async() => {
+            const genesisTime = Number(await time.latest()) + 10 * 1000;
+
+            // Create reward token and staking token
+            rewardToken = await TestBEP20.new(1000000, { from: tokenCreator});
+            stakingToken = await TestBEP20.new(1000000, { from: tokenCreator});
+
+            // Create a factory instance and transfer for it 600 reward token
+            factoryInstance = await FactoryContract.new(rewardToken.address, genesisTime, { from: factoryCreator});
+            await rewardToken.transfer(factoryInstance.address, rewardAmount, { from: tokenCreator});
+
+            // Create a farm and call deploy
+            const deployParams = [stakingToken.address, rewardAmount, rewardDuration, vestingPeriod, splits, claimable];
+            await factoryInstance.deploy(...deployParams, {from: factoryCreator});
+            const farmInfo = await factoryInstance.stakingRewardInfosByStakingToken(stakingToken.address);
+            farmInstance = await StakingReward.at(farmInfo.stakingReward);
+
+            // Transfer for staker 
+            await stakingToken.transfer(staker1, 100, { from: tokenCreator });
+        }); 
+
+        it("Stake success", async() => {
+            const stakeAmount = 10;
+
+            const nonce = await stakingToken.nonces(staker1, { from: staker1 });
+            console.log("Nonce of staker " + nonce);
+        })
+    })
+
+    xcontext("Two stakers stake into the farm", async() => {
         beforeEach(async() => {
             const genesisTime = Number(await time.latest()) + 10 * timeConstant;
 
