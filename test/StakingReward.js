@@ -4,6 +4,7 @@ const { time, expectRevert } = require('@openzeppelin/test-helpers');
 const FactoryContract = artifacts.require("StakingRewardsFactory");
 const StakingReward = artifacts.require("StakingReward");
 const TestBEP20 = artifacts.require("TestBEP20");
+const TestUniswapERC20 = artifacts.require("TestUniswapV2ERC20");
 
 
 contract("StakingReward", async(accounts) => {
@@ -181,11 +182,14 @@ contract("StakingReward", async(accounts) => {
             await stakingToken.transfer(staker1, 100, { from: tokenCreator });
         }); 
 
-        it("Stake success", async() => {
+        it("Token is created successful", async() => {
             const stakeAmount = 10;
-
-            const nonce = await stakingToken.nonces(staker1, { from: staker1 });
-            console.log("Nonce of staker " + nonce);
+            
+            const v2ERC20 = await TestUniswapERC20.new(1000, { from: tokenCreator});
+            const balance = Number(await v2ERC20.balanceOf(tokenCreator, { from: tokenCreator}));
+            expect(balance).equals(1000);
+            // const nonce = await stakingToken.nonces(staker1, { from: staker1 });
+            // console.log("Nonce of staker " + nonce);
         })
     })
 
