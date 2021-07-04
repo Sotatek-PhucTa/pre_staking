@@ -1,5 +1,7 @@
 const expect = require('chai').expect;
 const { time, expectRevert } = require('@openzeppelin/test-helpers');
+const { ecsign } = require("ethereumjs-util");
+const { getApprovalDigest } = require("./helper/util");
 
 const FactoryContract = artifacts.require("StakingRewardsFactory");
 const StakingReward = artifacts.require("StakingReward");
@@ -184,12 +186,28 @@ contract("StakingReward", async(accounts) => {
 
         it("Token is created successful", async() => {
             const balanceOfStaker = Number(await stakingToken.balanceOf(staker1, { from: staker1}));
-            const tokenName = await stakingToken.name();
-            console.log("Token name " + tokenName);
             expect(balanceOfStaker).equals(100);
         });
 
+        it("stakeWithPermit", async() => {
+            const nonce = Number(await stakingToken.nonces(staker1));
+            console.log("NONCE " + nonce);
+            const deadline = Date.now() + 24 * 60 * 60 * 1000;   //add 24hours 
+            const stakeAmount = 10;
+            const digest = await getApprovalDigest(
+                stakingToken,
+                { owner: staker1, spender: farmInstance.address, value: stakeAmount},
+                nonce,
+                deadline
+            );
 
+            const privateKey = '0x0e7b9a69f3d1c863083ed6f0a931994cda06528fcb18481de0f78cf13f10fd63';
+            const { v, r, s} = ecsign(Buffer.from(digest.slice(2), 'hex'),
+                Buffer.from(privateKey.slice(2), 'hex'));
+            
+            await farmInstance.stakeWithPermit(stakeAmount, deadline, v, r, s);
+
+        });
     })
 
     xcontext("Two stakers stake into the farm", async() => {
