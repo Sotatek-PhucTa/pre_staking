@@ -166,7 +166,7 @@ contract("StakingReward", async(accounts) => {
 
             // Create reward token and staking token
             rewardToken = await TestBEP20.new(1000000, { from: tokenCreator});
-            stakingToken = await TestBEP20.new(1000000, { from: tokenCreator});
+            stakingToken = await TestUniswapERC20.new(1000000, { from: tokenCreator});
 
             // Create a factory instance and transfer for it 600 reward token
             factoryInstance = await FactoryContract.new(rewardToken.address, genesisTime, { from: factoryCreator});
@@ -183,14 +183,13 @@ contract("StakingReward", async(accounts) => {
         }); 
 
         it("Token is created successful", async() => {
-            const stakeAmount = 10;
-            
-            const v2ERC20 = await TestUniswapERC20.new(1000, { from: tokenCreator});
-            const balance = Number(await v2ERC20.balanceOf(tokenCreator, { from: tokenCreator}));
-            expect(balance).equals(1000);
-            // const nonce = await stakingToken.nonces(staker1, { from: staker1 });
-            // console.log("Nonce of staker " + nonce);
-        })
+            const balanceOfStaker = Number(await stakingToken.balanceOf(staker1, { from: staker1}));
+            const tokenName = await stakingToken.name();
+            console.log("Token name " + tokenName);
+            expect(balanceOfStaker).equals(100);
+        });
+
+
     })
 
     xcontext("Two stakers stake into the farm", async() => {
