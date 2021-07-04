@@ -6,10 +6,11 @@ const StakingReward = artifacts.require("StakingReward");
 const TestBEP20 = artifacts.require("TestBEP20");
 
 contract('FactoryContract', (accounts) => {
+    const timeConstant = 1000;
     xcontext("#About constructor", async() => {
         const [creator, simulateRewardToken] = accounts;
         it("should create contract successfully", async () => {
-            const genesisTime = Number(await time.latest()) + 10 * 60 * 1000  //Add 10 minutes from now and ourtimezone;
+            const genesisTime = Number(await time.latest()) + 10 * 60 * timeConstant  //Add 10 minutes from now and ourtimezone;
             const factoryInstance = await FactoryContract.new(simulateRewardToken, genesisTime, {from: creator});
 
             // Instance should be success
@@ -24,7 +25,7 @@ contract('FactoryContract', (accounts) => {
         });
 
         it("should not create a contract", async() => {
-            const genesisTime = Number(await time.latest()) - 10 * 60 * 1000;   // Sub 10 minute from now
+            const genesisTime = Number(await time.latest()) - 10 * 60 * timeConstant;   // Sub 10 minute from now
             await expectRevert(FactoryContract.new(simulateRewardToken, genesisTime, {from: creator}), "StakingRewardFactory::constructor: genesis too soon");
         })
     });
@@ -39,7 +40,7 @@ contract('FactoryContract', (accounts) => {
         const claimable = 20;
         const deployParams = [simulateStakingToken, rewardAmount, rewardDuration, vestingPeriod, splits, claimable];
         beforeEach(async() => {
-            const genesisTime = Number(await time.latest()) + 10 * 1000 //Add 10 second from now
+            const genesisTime = Number(await time.latest()) + 10 * timeConstant //Add 10 second from now
             factoryInstance = await FactoryContract.new(simulateRewardToken, genesisTime, {from: creator});
         });
 
@@ -89,7 +90,7 @@ contract('FactoryContract', (accounts) => {
         const deployParams1 = [simulateStakingToken1, rewardAmount, rewardDuration, vestingPeriod, splits, claimable];
 
         it("Should create two farm", async() => {
-            const genesisTime = Number(await time.latest()) + 10 * 1000;   // Add 10 second from now
+            const genesisTime = Number(await time.latest()) + 10 * timeConstant;   // Add 10 second from now
             const factoryInstance = await FactoryContract.new(simulateRewardToken, genesisTime, { from: creator});
             await factoryInstance.deploy(...deployParams, {from: creator});
             await factoryInstance.deploy(...deployParams1, {from: creator});
@@ -98,7 +99,7 @@ contract('FactoryContract', (accounts) => {
             expect(await factoryInstance.stakingTokens(1)).equals(simulateStakingToken1); })
     })        
 
-    xit("#Deploy an BEP20 token", async() => {
+    it("#Deploy an BEP20 token", async() => {
         const [creator, receiver] = accounts;
         const token1 = await TestBEP20.new(1000, {from: creator});
         expect(await token1.getOwner()).equals(creator);
@@ -120,7 +121,7 @@ contract('FactoryContract', (accounts) => {
             rewardTokenInstance = await TestBEP20.new(1000, {from: rewardTokenCreator});
             await rewardTokenInstance.transfer(factoryCreator, 600, { from: rewardTokenCreator});
             // const genesisTime = Number(await time.latest() + 1 * 1000);  //Add 10 miliseconds
-            const genesisTime = Number(await time.latest()) + 10 * 1000;  //Add 10 seconds
+            const genesisTime = Number(await time.latest()) + 10 * timeConstant;  //Add 10 seconds
             factoryInstance = await FactoryContract.new(rewardTokenInstance.address, genesisTime, {from: factoryCreator});
             await rewardTokenInstance.transfer(factoryInstance.address, 600, {from: factoryCreator})
         });
@@ -141,7 +142,7 @@ contract('FactoryContract', (accounts) => {
             expect(balanceFarmBeforeCall).equals(0);
 
             // After call notifyRewardAmounts(), balance of farmAddress is equal to rewardAmount
-            await time.increase(30 * 1000);   //Add 30 seconds
+            await time.increase(30 * timeConstant);   //Add 30 seconds
             await factoryInstance.notifyRewardAmounts({from: factoryCreator});
             const balanceFarmAfterCall = Number(await rewardTokenInstance.balanceOf(farmAddress));
             expect(balanceFarmAfterCall).equals(rewardAmount);
@@ -179,7 +180,7 @@ contract('FactoryContract', (accounts) => {
             const farmInfo = await factoryInstance.stakingRewardInfosByStakingToken(simulateStakingToken);
             const farmAddress = farmInfo.stakingReward;
 
-            await time.increase(30 * 1000);     //Add 30 seconds
+            await time.increase(30 * timeConstant);     //Add 30 seconds
             await expectRevert(factoryInstance.notifyRewardAmounts({from: factoryCreator}), "exceed");
         });
     });
