@@ -4,12 +4,9 @@
     "@truffle/hdwallet-provider": "^1.4.1",
     "@uniswap/v2-core": "^1.0.1",
     "chai": "^4.3.4",
-<<<<<<< HEAD
     "solidity-util": "github:willitscale/solidity-util",
-=======
     "ethereumjs-util": "^6.2.1",
     "ethers": "^4.0.48",
->>>>>>> master
     "truffle": "^5.3.14",
     "truffle-hdwallet-provider": "^1.0.17"
   },
