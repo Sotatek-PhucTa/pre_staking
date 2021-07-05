@@ -38,8 +38,7 @@ contract StakingReward is
     mapping(address => uint256) public rewards;
     mapping(address => uint256) public totalEarnedReward;
     mapping(address => uint256) public claimedSplits;
-    mapping(address => bool) public hasClaimed;
-    mapping(address => uint256) public totalVestedRewardForUser;
+    mapping(address => bool) public hasClaimed; mapping(address => uint256) public totalVestedRewardForUser;
 
     uint256 private _totalSupply;
     mapping(address => uint256) private _balances;
@@ -130,6 +129,27 @@ contract StakingReward is
         return rewardRate.mul(rewardDuration);
     }
 
+    function availableReward(address account) external view override returns (uint256) {
+        if (block.timestamp < periodFinish) 
+            return 0;
+        
+        uint256 totalReward;
+
+        if (totalEarnedReward[account] != 0) 
+            totalReward = totalEarnedReward[account];
+        else
+            totalReward = earned(account);
+        
+        uint256 currentSplit = (block.timestamp).sub(periodFinish).div(splitWindow).add(1);
+        if (currentSplit > splits.add(1))
+            currentSplit = splits.add(1);
+
+        uint256 claimedSplit = claimedSplits[account];
+        if (hasClaimed[account])
+            claimedSplit = claimedSplit.add(1);
+
+        return currentSplit.sub(claimedSplit).mul(claimable).mul(totalReward).div(100);
+    } 
     //==================== MUTATIVE FUNCTIONS ==================== 
 
     /**

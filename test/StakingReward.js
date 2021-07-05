@@ -23,7 +23,7 @@ contract("StakingReward", async(accounts) => {
     const claimable = 20;
 
 
-    xcontext("Single person stake into the pool", async() => {
+    context("Single person stake into the pool", async() => {
         beforeEach(async() => {
             const genesisTime = Number(await time.latest()) + 10 * 1000;
 
@@ -154,16 +154,18 @@ contract("StakingReward", async(accounts) => {
             await time.increase(rewardDuration);
             await farmInstance.withdraw(100, { from: staker1 });
             for (let i of [0, 1, 2, 3, 4]) {
+                const availableReward = Number(await farmInstance.availableReward(staker1, { from: staker1}));
                 const oldBalance = Number(await rewardToken.balanceOf(staker1, { from: staker1}));
                 await farmInstance.getReward({ from: staker1});
                 const newBalance = Number(await rewardToken.balanceOf(staker1, { from: staker1}));
+                expect(newBalance - oldBalance).equals(availableReward);
                 expect(newBalance - oldBalance).equals(rewardAmount / (splits + 1));
                 await time.increase(vestingPeriod / splits);
             }
         })
     });
 
-    context("Stake with permit", async() => {
+    xcontext("Stake with permit", async() => {
         beforeEach(async() => {
             const genesisTime = Number(await time.latest()) + 10 * 1000;
 
