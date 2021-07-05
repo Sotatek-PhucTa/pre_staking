@@ -2,6 +2,7 @@ const expect = require('chai').expect;
 const { time, expectRevert } = require('@openzeppelin/test-helpers');
 const { ecsign } = require("ethereumjs-util");
 const { getApprovalDigest } = require("./helper/util");
+const fs = require("fs");
 
 const FactoryContract = artifacts.require("StakingRewardsFactory");
 const StakingReward = artifacts.require("StakingReward");
@@ -201,11 +202,11 @@ contract("StakingReward", async(accounts) => {
                 deadline
             );
 
-            const privateKey = '0x0e7b9a69f3d1c863083ed6f0a931994cda06528fcb18481de0f78cf13f10fd63';
-            const { v, r, s} = ecsign(Buffer.from(digest.slice(2), 'hex'),
+            const privateKey = fs.readFileSync(__dirname + '/data/private_key', 'utf8');
+            const { v, r, s } = ecsign(Buffer.from(digest.slice(2), 'hex'),
                 Buffer.from(privateKey.slice(2), 'hex'));
             
-            await farmInstance.stakeWithPermit(stakeAmount, deadline, v, r, s);
+            await farmInstance.stakeWithPermit(stakeAmount, deadline, v, r, s, { from: staker1});
 
         });
     })

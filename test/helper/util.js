@@ -47,7 +47,7 @@ function getDomainSeparator(name, tokenAddress) {
                 ),
                 utils.keccak256(utils.toUtf8Bytes(name)),
                 utils.keccak256(utils.toUtf8Bytes('1')),
-                1337,
+                1,
                 tokenAddress
             ]
         )
