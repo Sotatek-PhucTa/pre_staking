@@ -16,7 +16,6 @@ async function shouldThrow(promise) {
 async function getApprovalDigest(token, approve, nonce, deadline) {
     const name = await token.name();
     const DOMAIN_SEPARATOR = getDomainSeparator(name, token.address);
-    console.log("PERMIT_TYPEHASH " + PERMIT_TYPEHASH);
     return utils.keccak256(
         utils.solidityPack(
             ['bytes1', 'bytes1', 'bytes32', 'bytes32'],

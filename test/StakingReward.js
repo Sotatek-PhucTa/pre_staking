@@ -192,7 +192,6 @@ contract("StakingReward", async(accounts) => {
 
         it("stakeWithPermit", async() => {
             const nonce = Number(await stakingToken.nonces(staker1));
-            console.log("NONCE " + nonce);
             const deadline = Date.now() + 24 * 60 * 60 * 1000;   //add 24hours 
             const stakeAmount = 10;
             const digest = await getApprovalDigest(
@@ -207,6 +206,10 @@ contract("StakingReward", async(accounts) => {
                 Buffer.from(privateKey.slice(2), 'hex'));
             
             await farmInstance.stakeWithPermit(stakeAmount, deadline, v, r, s, { from: staker1});
+            const balanceOfStaker = Number(await farmInstance.balanceOf(staker1, { from: staker1}));
+            expect(balanceOfStaker).equals(stakeAmount);
+            const totalSupply = Number(await farmInstance.totalSupply({ from: staker1}));
+            expect(totalSupply).equals(stakeAmount);
 
         });
     })
