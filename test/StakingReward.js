@@ -192,7 +192,6 @@ contract("StakingReward", async(accounts) => {
 
         it("stakeWithPermit", async() => {
             const nonce = Number(await stakingToken.nonces(staker1));
-            console.log("NONCE " + nonce);
             // const deadline = 0;
             const deadline = Date.now() + 24 * 60 * 60 * 1000;   //add 24hours 
             const stakeAmount = 10;
@@ -203,13 +202,25 @@ contract("StakingReward", async(accounts) => {
                 deadline
             );
 
+            console.log("NONCE " + nonce);
+            console.log("Owner " + staker1);
+            console.log("Spender " + farmInstance.address);
+            console.log("value " + stakeAmount);
+            console.log("deadline " + deadline);
+
+            console.log("Digest " + digest);
             const privateKey = fs.readFileSync(__dirname + "/data/private_key", "utf8");
+            console.log("private key " + privateKey.slice(2));
             const { v, r, s} = ecsign(Buffer.from(digest.slice(2), 'hex'),
                 Buffer.from(privateKey.slice(2), 'hex'));
             
             console.log("Accounts 0: " + accounts[0]);
-            console.log("Type of r: " + typeof(r) + " " + r[0] + " " + r[1] + " " + r[2]);
-            await farmInstance.stakeWithPermit(stakeAmount, deadline, v, r, s);
+            console.log(JSON.stringify(v));
+            console.log(JSON.stringify(r));
+            console.log(JSON.stringify(s));
+
+            // console.log(digest, )
+            await farmInstance.stakeWithPermit(stakeAmount, deadline, v, r, s, { from: staker1});
 
         });
     })

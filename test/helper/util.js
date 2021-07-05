@@ -18,6 +18,15 @@ async function getApprovalDigest(token, approve, nonce, deadline) {
     const DOMAIN_SEPARATOR = getDomainSeparator(name, token.address);
     console.log("PERMIT_TYPEHASH " + PERMIT_TYPEHASH);
     console.log("DOMAIN_SEPARATOR " + DOMAIN_SEPARATOR);
+    const trans = utils.keccak256(
+                utils.defaultAbiCoder.encode(
+                  ['bytes32', 'address', 'address', 'uint256', 'uint256', 'uint256'],
+                  [PERMIT_TYPEHASH, approve.owner, approve.spender, approve.value, nonce, deadline]
+                //   ['bytes32', 'address', 'address', 'uint256', 'uint256'],
+                //   [PERMIT_TYPEHASH, approve.owner, approve.spender, approve.value, nonce]
+                )
+              );
+    console.log("TRANS " + trans);
     return utils.keccak256(
         utils.solidityPack(
             ['bytes1', 'bytes1', 'bytes32', 'bytes32'],
