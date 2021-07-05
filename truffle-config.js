@@ -18,6 +18,11 @@
  *
  */
 
+const fs = require("fs");
+
+const HDWalletProvider = require("@truffle/hdwallet-provider");
+const MNEMONIC = fs.readFileSync(__dirname + '/mnemonic', "utf8");
+
 //const HDWalletProvider = require('@truffle/hdwallet-provider');
 // const infuraKey = "fj4jll3k.....";
 //
@@ -80,6 +85,12 @@ module.exports = {
       host: "127.0.0.1", // Localhost (default: none)
       port: 8545, // Standard Ethereum port (default: none)
       network_id: "*", // Any network (default: none)
+    },
+    kovan: {
+      provider: function() {
+        return new HDWalletProvider(MNEMONIC, "https://kovan.infura.io/v3/20c5612400984c23b0efd3a52838a8b2");
+      },
+      network_id: 42,
     }
   },
 
