@@ -77,10 +77,10 @@ module.exports = {
     // network_id: 2111,   // This network is yours, in the cloud.
     // production: true    // Treats this network as if it was a public net. (default: false)
     // },
-    //bsc_test: {
-    //  provider: () => new HDWalletProvider(mnemonic, 'APIlinks'),
-    //  network_id: 97
-    //}
+    bsc_test: {
+     provider: () => new HDWalletProvider(MNEMONIC, "https://data-seed-prebsc-1-s1.binance.org:8545"),
+     network_id: 97
+    },
     ganache: {
       host: "127.0.0.1", // Localhost (default: none)
       port: 8545, // Standard Ethereum port (default: none)

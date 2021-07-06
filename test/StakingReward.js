@@ -165,7 +165,7 @@ contract("StakingReward", async(accounts) => {
         })
     });
 
-    xcontext("Stake with permit", async() => {
+    context("Stake with permit", async() => {
         beforeEach(async() => {
             const genesisTime = Number(await time.latest()) + 10 * 1000;
 
