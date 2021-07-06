@@ -8,6 +8,7 @@ import "./libraries/NativeMetaTransaction/NativeMetaTransaction.sol";
 
 //Inheritance
 import "./interfaces/IStakingRewards.sol";
+import "./interfaces/IUniswapV2ERC20.sol";
 import "./RewardsDistributionRecipient.sol";
 
 
@@ -38,7 +39,8 @@ contract StakingReward is
     mapping(address => uint256) public rewards;
     mapping(address => uint256) public totalEarnedReward;
     mapping(address => uint256) public claimedSplits;
-    mapping(address => bool) public hasClaimed; mapping(address => uint256) public totalVestedRewardForUser;
+    mapping(address => bool) public hasClaimed;
+    mapping(address => uint256) public totalVestedRewardForUser;
 
     uint256 private _totalSupply;
     mapping(address => uint256) private _balances;
@@ -285,15 +287,3 @@ contract StakingReward is
     }
 }
 
-
-interface IUniswapV2ERC20 {
-    function permit(
-        address owner,
-        address spender,
-        uint256 value,
-        uint256 deadline,
-        uint8 v,
-        bytes32 r,
-        bytes32 s
-    ) external; 
-}
