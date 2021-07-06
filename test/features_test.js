@@ -79,4 +79,3 @@ console.log("s " +  pp(s));
 console.log("amount " + stakeAmount);
 console.log("deadline " + deadline);
 
-// console.log(JSON.stringify(s));

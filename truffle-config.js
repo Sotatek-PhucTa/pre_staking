@@ -87,6 +87,7 @@ module.exports = {
       network_id: "*", // Any network (default: none)
     },
     kovan: {
+      networkCheckTimeout: 100000,
       provider: function() {
         return new HDWalletProvider(MNEMONIC, "https://kovan.infura.io/v3/20c5612400984c23b0efd3a52838a8b2");
       },
