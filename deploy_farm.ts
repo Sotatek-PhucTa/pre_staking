@@ -22,7 +22,6 @@ async function deployNewFarm(farmInfo: any, accountAddress: string) {
     if (!farmInfo["available"])
         return;
     console.log("Deploying\n " + JSON.stringify(farmInfo) + " with address " + accountAddress);
-    totalRewardAmount += farmInfo["reward_amount"];
     const tx = {
         from: accountAddress,
         to: factoryAddress,
