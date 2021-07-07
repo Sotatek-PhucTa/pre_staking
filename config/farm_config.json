@@ -31,5 +31,21 @@
             "claimable": 20 
 
         }
+    ],
+    "bsc_test": [
+    ],
+    "bsc_main": [
+        {
+            "staking_token": "0xf1124ddb0a66d2c6fb34d703ff903a1a09e3d38a",
+            "name": "BUNI-WETH",
+            "available": true,
+            "reward_amount": 12000,
+            "reward_duration": 600,
+            "vesting_period": 1200,
+            "splits": 4,
+            "claimable": 20 
+
+        }
+
     ]
 }
