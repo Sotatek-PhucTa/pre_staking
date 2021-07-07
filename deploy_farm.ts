@@ -58,4 +58,3 @@ const farmInfos = JSON.parse(fs.readFileSync("./config/farm_config.json", "utf-8
         await deployNewFarm(farmInfo, accountAddress[0]);
     }
 })();
-
