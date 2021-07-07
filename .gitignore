@@ -1,3 +1,4 @@
 mnemonic
 node_modules/
 build/
+config/sys_config.json

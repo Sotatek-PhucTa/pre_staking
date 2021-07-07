@@ -1,0 +1,52 @@
+import Web3 from "web3";
+import fs from "fs";
+import HDWalletProviders from "@truffle/hdwallet-provider";
+
+
+const config = JSON.parse(fs.readFileSync("./config/sys_config.json", "utf-8"));
+const privateKey = config["mnemonic"].trim();
+const factoryAddress = config["factory_address"].trim();
+const api = config["infura_api"].trim();
+const web3 = new Web3(new HDWalletProviders(privateKey, api));
+
+function getAbi(buildPath: string) {
+    const buildData = JSON.parse(fs.readFileSync(buildPath, "utf-8"));
+    return buildData["abi"];
+}
+
+const factoryContractAbi = getAbi("./build/contracts/StakingRewardsFactory.json");
+const farmAbi = getAbi("./build/contracts/StakingReward.json");
+
+const factoryContract = new web3.eth.Contract(factoryContractAbi, factoryAddress); 
+
+async function deployNewFarm(farmInfo: any, accountAddress: string) {
+    if (!farmInfo["available"])
+        return;
+    console.log("Deploying\n " + JSON.stringify(farmInfo));
+    const tx = {
+        from: accountAddress,
+        to: factoryAddress,
+        data: factoryContract.methods.deploy(
+            farmInfo["staking_token"],
+            farmInfo["reward_amount"],
+            farmInfo["reward_duration"],
+            farmInfo["vesting_period"],
+            farmInfo["splits"],
+            farmInfo["claimable"]
+        ).encodeABI()
+    }
+
+    const signedTx = await web3.eth.signTransaction(tx, tx.from);
+    console.log("Signed transaction " + JSON.stringify(signedTx));
+    await web3.eth.sendSignedTransaction(signedTx.raw);
+    console.log("Deploy suceess\n");
+    console.log("-----------------------------------------------");
+}
+// Deploy contract 
+const farmInfosInKovan = JSON.parse(fs.readFileSync("./config/farm_config.json", "utf-8"))["kovan"];
+(async() => {
+    const accountAddress = await web3.eth.getAccounts();
+    for (let farmInfo of farmInfosInKovan) {
+        await deployNewFarm(farmInfo, accountAddress[0]);
+    }
+})();
