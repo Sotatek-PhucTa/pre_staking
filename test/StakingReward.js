@@ -23,7 +23,7 @@ contract("StakingReward", async(accounts) => {
     const claimable = 20;
 
 
-    context("Single person stake into the pool", async() => {
+    xcontext("Single person stake into the pool", async() => {
         beforeEach(async() => {
             const genesisTime = Number(await time.latest()) + 10 * 1000;
 
@@ -165,7 +165,87 @@ contract("StakingReward", async(accounts) => {
         })
     });
 
-    context("Stake with permit", async() => {
+
+    context("Single person stake into the pool with new released stretagy", async() => {
+        beforeEach(async() => {
+            const genesisTime = Number(await time.latest()) + 10 * timeConstant;
+
+            // Create reward token and staking token
+            rewardToken = await TestBEP20.new(1000000, { from: tokenCreator});
+            stakingToken = await TestBEP20.new(1000000, { from: tokenCreator});
+
+            // Create a factory instance and transfer for it 600 reward token
+            factoryInstance = await FactoryContract.new(rewardToken.address, genesisTime, { from: factoryCreator});
+            await rewardToken.transfer(factoryInstance.address, 600000, { from: tokenCreator});
+
+            // Create a farm and call deploy
+            const deployParams = [stakingToken.address, rewardAmount, rewardDuration, vestingPeriod, splits, claimable];
+            await factoryInstance.deploy(...deployParams, {from: factoryCreator});
+            const farmInfo = await factoryInstance.stakingRewardInfosByStakingToken(stakingToken.address);
+            farmInstance = await StakingReward.at(farmInfo.stakingReward);
+
+            // Transfer for staker 
+            await stakingToken.transfer(staker1, 100, { from: tokenCreator });
+        });
+
+        it("Stake into the farm and get all rewards", async() => {
+            await stakingToken.approve(farmInstance.address, 100, { from: staker1});
+            await farmInstance.stake(100, { from: staker1 });
+
+            // Call notifyRewardAmount
+            // Move time in block later than genesis
+            await time.increase(20 * timeConstant);
+            await factoryInstance.notifyRewardAmounts({ from: factoryCreator });
+
+            // Move time in block to 3/4 time of vestingPeriod
+            await time.increase((rewardDuration + vestingPeriod));
+            await farmInstance.getReward({from: staker1});
+            const timeGetReward = Number(await time.latest());
+
+            const rewardedAmount = Number(await rewardToken.balanceOf(staker1, { from: staker1}));
+            const periodFinish = Number(await farmInstance.periodFinish());
+            const splitWindow = Number(await farmInstance.splitWindow());
+            const calculatedAmount = rewardAmount * (Math.floor((timeGetReward - (periodFinish + splitWindow)) / splitWindow) + 1) / (splits + 1);
+            expect(rewardedAmount).equals(calculatedAmount);
+
+            // Move time in block greater than vestingPeriod
+            await time.increase(splitWindow);
+            await farmInstance.getReward({ from: staker1 });
+            const rewardedAmount1 = Number(await rewardToken.balanceOf(staker1, { from: staker1}));
+            expect(rewardedAmount1).equals(rewardAmount);
+        });
+
+        it("Stake into the farm and get reward each release", async() => {
+            await stakingToken.approve(farmInstance.address, 100, { from: staker1});
+            await farmInstance.stake(100, { from: staker1 });
+
+            // Move time in block greater then genesis
+            await time.increase(20 * timeConstant);
+            await factoryInstance.notifyRewardAmounts({ from: factoryCreator });
+
+            // Move time to periodFinish
+            await time.increase(rewardDuration);
+            await farmInstance.withdraw(100, { from: staker1 });
+            for (let i of [0, 1, 2, 3, 4, 5]) {
+                const availableReward = Number(await farmInstance.availableReward(staker1, { from: staker1}));
+                const oldBalance = Number(await rewardToken.balanceOf(staker1, { from: staker1}));
+                try {
+                    await farmInstance.getReward({ from: staker1});
+                } catch {
+                    console.log("Error in " + i);
+                }
+                const newBalance = Number(await rewardToken.balanceOf(staker1, { from: staker1}));
+                expect(newBalance - oldBalance).equals(availableReward);
+                if (i === 0)
+                    expect(newBalance - oldBalance).equals(0);
+                else
+                    expect(newBalance - oldBalance).equals(rewardAmount / (splits + 1));
+                await time.increase(vestingPeriod / splits);
+            }
+        })
+    });
+
+    xcontext("Stake with permit", async() => {
         beforeEach(async() => {
             const genesisTime = Number(await time.latest()) + 10 * 1000;
 

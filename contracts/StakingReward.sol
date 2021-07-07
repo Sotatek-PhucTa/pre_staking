@@ -132,7 +132,8 @@ contract StakingReward is
     }
 
     function availableReward(address account) external view override returns (uint256) {
-        if (block.timestamp < periodFinish) 
+        uint256 rewardedTime = periodFinish.add(splitWindow);
+        if (block.timestamp < rewardedTime) 
             return 0;
         
         uint256 totalReward;
@@ -142,7 +143,7 @@ contract StakingReward is
         else
             totalReward = earned(account);
         
-        uint256 currentSplit = (block.timestamp).sub(periodFinish).div(splitWindow).add(1);
+        uint256 currentSplit = (block.timestamp).sub(rewardedTime).div(splitWindow).add(1);
         if (currentSplit > splits.add(1))
             currentSplit = splits.add(1);
 
@@ -207,7 +208,8 @@ contract StakingReward is
      * @notice staker get reward out of the farm, can get part of the reward in each release
      */
     function getReward() public override nonReentrant updateReward(_msgSender()) {
-        require(block.timestamp >= periodFinish, 'Cannot claims token now');
+        uint256 rewardedTime = periodFinish.add(splitWindow);
+        require(block.timestamp >= rewardedTime, 'Cannot claims token now');
 
         uint256 reward;
         uint256 claimedSplitsForUser = claimedSplits[_msgSender()];
@@ -219,13 +221,15 @@ contract StakingReward is
             totalVestedRewardForUser[_msgSender()] = rewards[_msgSender()].sub(reward);
         }
         if (claimedSplitsForUser < splits) {
-            uint256 currentSplit = (currentDate.sub(periodFinish)).div(splitWindow);
+            uint256 currentSplit = (currentDate.sub(rewardedTime)).div(splitWindow);
             currentSplit = currentSplit > splits ? splits: currentSplit;
             reward = reward.add(
                 totalVestedRewardForUser[_msgSender()].mul(currentSplit.sub(claimedSplitsForUser)).div(splits)
             );
 
-            if (claimedSplitsForUser != currentSplit) claimedSplits[_msgSender()] = currentSplit;
+            if (claimedSplitsForUser != currentSplit) {
+                claimedSplits[_msgSender()] = currentSplit;
+            }
             if (reward > 0) {
                 hasClaimed[_msgSender()] = true;
                 rewards[_msgSender()] = rewards[_msgSender()].sub(reward);
@@ -240,7 +244,7 @@ contract StakingReward is
      */
     function exit() external override {
         withdraw(_balances[_msgSender()]);
-        if (block.timestamp >= periodFinish) getReward();
+        if (block.timestamp >= periodFinish.add(splitWindow)) getReward();
     }
 
     /*===================RESTRICTED FUNCTIONS================*/
