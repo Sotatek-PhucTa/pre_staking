@@ -1,6 +1,7 @@
 import Web3 from "web3";
 import fs from "fs";
 import HDWalletProviders from "@truffle/hdwallet-provider";
+import { BigNumber } from "ethers/utils";
 
 
 const config = JSON.parse(fs.readFileSync("./config/sys_config.json", "utf-8"));
@@ -39,24 +40,22 @@ async function deployNewFarm(farmInfo: any, accountAddress: string) {
     console.log("Signed transaction " + JSON.stringify(signedTx));
     await web3.eth.sendSignedTransaction(signedTx.raw);
     console.log("Deploy suceess\n");
+    
+    const farmDeployedInfo = await 
+        factoryContract.methods.stakingRewardInfosByStakingToken(farmInfo["staking_token"])
+        .call({from: accountAddress});
+    
+    console.log("Deployed farm " );
+    console.log(farmDeployedInfo);
     console.log("-----------------------------------------------");
 }
 // Deploy contract 
 const farmInfos = JSON.parse(fs.readFileSync("./config/farm_config.json", "utf-8"))["kovan"];
-const totalRewardAmount = farmInfos.map(farmInfo => {
-  if (farmInfo["available"]) 
-    return farmInfo["reward_amount"];
-  else 
-    return 0;  
-}).reduce((a, b) => a + b, 0);
-
-console.log("Total reward amount" + totalRewardAmount);
 
 (async() => {
     const accountAddress = await web3.eth.getAccounts();
     for (let farmInfo of farmInfos) {
         await deployNewFarm(farmInfo, accountAddress[0]);
-
     }
 })();
 
