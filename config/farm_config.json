@@ -3,7 +3,7 @@
         {
             "staking_token": "0x9e305ed7aa6ab2fe5f64964f82b14c1e6a03557d",
             "name": "BUNI-WETH",
-            "available": false,
+            "available": true,
             "reward_amount": 6000,
             "reward_duration": 600,
             "vesting_period": 1200,
@@ -13,18 +13,8 @@
         {
             "staking_token": "0x0022a9efbb09a67be9c2a5f29ca59fbcabbcab48",
             "name": "BUNI-BUSD",
-            "available": false,
+            "available": true,
             "reward_amount": 6000,
-            "reward_duration": 600,
-            "vesting_period": 1200,
-            "splits": 4,
-            "claimable": 20 
-        },
-        {
-            "staking_token": "0x0022a9efbb09a67be9c2a5f29ca59fbcabbcab48",
-            "name": "BUNI-HUG",
-            "available": false,
-            "reward_amount": 12000,
             "reward_duration": 600,
             "vesting_period": 1200,
             "splits": 4,

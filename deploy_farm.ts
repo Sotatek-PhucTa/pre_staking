@@ -15,14 +15,14 @@ function getAbi(buildPath: string) {
 }
 
 const factoryContractAbi = getAbi("./build/contracts/StakingRewardsFactory.json");
-const farmAbi = getAbi("./build/contracts/StakingReward.json");
 
 const factoryContract = new web3.eth.Contract(factoryContractAbi, factoryAddress); 
 
 async function deployNewFarm(farmInfo: any, accountAddress: string) {
     if (!farmInfo["available"])
         return;
-    console.log("Deploying\n " + JSON.stringify(farmInfo));
+    console.log("Deploying\n " + JSON.stringify(farmInfo) + " with address " + accountAddress);
+    totalRewardAmount += farmInfo["reward_amount"];
     const tx = {
         from: accountAddress,
         to: factoryAddress,
@@ -43,10 +43,21 @@ async function deployNewFarm(farmInfo: any, accountAddress: string) {
     console.log("-----------------------------------------------");
 }
 // Deploy contract 
-const farmInfosInKovan = JSON.parse(fs.readFileSync("./config/farm_config.json", "utf-8"))["kovan"];
+const farmInfos = JSON.parse(fs.readFileSync("./config/farm_config.json", "utf-8"))["kovan"];
+const totalRewardAmount = farmInfos.map(farmInfo => {
+  if (farmInfo["available"]) 
+    return farmInfo["reward_amount"];
+  else 
+    return 0;  
+}).reduce((a, b) => a + b, 0);
+
+console.log("Total reward amount" + totalRewardAmount);
+
 (async() => {
     const accountAddress = await web3.eth.getAccounts();
-    for (let farmInfo of farmInfosInKovan) {
+    for (let farmInfo of farmInfos) {
         await deployNewFarm(farmInfo, accountAddress[0]);
+
     }
 })();
+

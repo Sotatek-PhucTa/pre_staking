@@ -21,7 +21,7 @@
 const fs = require("fs");
 
 const HDWalletProvider = require("@truffle/hdwallet-provider");
-const MNEMONIC = fs.readFileSync(__dirname + '/mnemonic', "utf8");
+const MNEMONIC = JSON.parse(fs.readFileSync(__dirname + '/config/sys_config.json', "utf8"))["mnemonic"].trim();
 
 //const HDWalletProvider = require('@truffle/hdwallet-provider');
 // const infuraKey = "fj4jll3k.....";
