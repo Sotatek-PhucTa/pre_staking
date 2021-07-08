@@ -5,7 +5,7 @@
             "name": "BUNI-WETH",
             "available": true,
             "reward_amount": "600000000000000000000",
-            "reward_duration": 600,
+            "reward_duration": 1209600,
             "vesting_period": 1200,
             "splits": 4,
             "claimable": 20 
@@ -15,7 +15,7 @@
             "name": "BUNI-BUSD",
             "available": true,
             "reward_amount": "600000000000000000000",
-            "reward_duration": 600,
+            "reward_duration": 1209600,
             "vesting_period": 1200,
             "splits": 4,
             "claimable": 20 
@@ -25,7 +25,7 @@
             "name": "BUNI-WETH",
             "available": true,
             "reward_amount": "600000000000000000000",
-            "reward_duration": 600,
+            "reward_duration": 1209600,
             "vesting_period": 1200,
             "splits": 4,
             "claimable": 20 
@@ -40,8 +40,8 @@
             "name": "BUNI-WBNB",
             "available": true,
             "reward_amount": "4000000000000000000000000",
-            "reward_duration": 600,
-            "vesting_period": 3600,
+            "reward_duration": 1209600,
+            "vesting_period": 10368000,
             "splits": 4,
             "claimable": 20 
         },
@@ -50,8 +50,8 @@
             "name": "BUSD-USDT",
             "available": true,
             "reward_amount": "2000000000000000000000000",
-            "reward_duration": 600,
-            "vesting_period": 3600,
+            "reward_duration": 1209600,
+            "vesting_period": 10368000,
             "splits": 4,
             "claimable": 20 
         },
@@ -60,8 +60,8 @@
             "name": "BUSD-USDC",
             "available": true,
             "reward_amount": "2000000000000000000000000",
-            "reward_duration": 600,
-            "vesting_period": 3600,
+            "reward_duration": 1209600,
+            "vesting_period": 10368000,
             "splits": 4,
             "claimable": 20 
         },
@@ -70,8 +70,8 @@
             "name": "USDC-USDT",
             "available": true,
             "reward_amount": "2000000000000000000000000",
-            "reward_duration": 600,
-            "vesting_period": 3600,
+            "reward_duration": 1209600,
+            "vesting_period": 10368000,
             "splits": 4,
             "claimable": 20 
         },
@@ -80,8 +80,8 @@
             "name": "BUSD-WBNB",
             "available": true,
             "reward_amount": "2000000000000000000000000",
-            "reward_duration": 600,
-            "vesting_period": 3600,
+            "reward_duration": 1209600,
+            "vesting_period": 10368000,
             "splits": 4,
             "claimable": 20 
         },
@@ -90,8 +90,8 @@
             "name": "USDT-WBNB",
             "available": true,
             "reward_amount": "2000000000000000000000000",
-            "reward_duration": 600,
-            "vesting_period": 3600,
+            "reward_duration": 1209600,
+            "vesting_period": 10368000,
             "splits": 4,
             "claimable": 20 
         },
@@ -100,8 +100,8 @@
             "name": "ETH-WBNB",
             "available": true,
             "reward_amount": "2000000000000000000000000",
-            "reward_duration": 600,
-            "vesting_period": 3600,
+            "reward_duration": 1209600,
+            "vesting_period": 10368000,
             "splits": 4,
             "claimable": 20 
         },
@@ -110,8 +110,8 @@
             "name": "BTCB-WBNB",
             "available": true,
             "reward_amount": "2000000000000000000000000",
-            "reward_duration": 600,
-            "vesting_period": 3600,
+            "reward_duration": 1209600,
+            "vesting_period": 10368000,
             "splits": 4,
             "claimable": 20 
         },
@@ -120,8 +120,8 @@
             "name": "DOT-WBNB",
             "available": true,
             "reward_amount": "2000000000000000000000000",
-            "reward_duration": 600,
-            "vesting_period": 3600,
+            "reward_duration": 1209600,
+            "vesting_period": 10368000,
             "splits": 4,
             "claimable": 20 
         },        
@@ -130,8 +130,8 @@
             "name": "ADA-WBNB",
             "available": true,
             "reward_amount": "2000000000000000000000000",
-            "reward_duration": 600,
-            "vesting_period": 3600,
+            "reward_duration": 1209600,
+            "vesting_period": 10368000,
             "splits": 4,
             "claimable": 20 
         }
