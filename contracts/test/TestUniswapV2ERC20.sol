@@ -1,9 +1,9 @@
 pragma solidity>=0.6.11;
 
-import "@uniswap/v2-core/contracts/UniswapV2ERC20.sol";
+import "./ERC20Permit.sol";
 
-contract TestUniswapV2ERC20 is UniswapV2ERC20 {
-    constructor(uint256 amount) public UniswapV2ERC20() {
+contract TestUniswapV2ERC20 is ERC20Permit {
+    constructor(uint256 amount) public ERC20Permit("ERC20Permit", "EP", "1") {
         _mint(msg.sender, amount);
     }
 }
