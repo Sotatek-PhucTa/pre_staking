@@ -1,13 +1,13 @@
 import Web3 from "web3";
 import fs from "fs";
 import HDWalletProviders from "@truffle/hdwallet-provider";
-import { BigNumber } from "ethers/utils";
 
 
 const config = JSON.parse(fs.readFileSync("./config/sys_config.json", "utf-8"));
 const privateKey = config["mnemonic"].trim();
 const factoryAddress = config["factory_address"].trim();
-const api = config["infura_api"].trim();
+// const api = config["kovan_api"].trim();
+const api = config["bsc_api"].trim();
 const web3 = new Web3(new HDWalletProviders(privateKey, api));
 
 function getAbi(buildPath: string) {
@@ -50,7 +50,7 @@ async function deployNewFarm(farmInfo: any, accountAddress: string) {
     console.log("-----------------------------------------------");
 }
 // Deploy contract 
-const farmInfos = JSON.parse(fs.readFileSync("./config/farm_config.json", "utf-8"))["kovan"];
+const farmInfos = JSON.parse(fs.readFileSync("./config/farm_config.json", "utf-8"))["bsc_main"];
 
 (async() => {
     const accountAddress = await web3.eth.getAccounts();

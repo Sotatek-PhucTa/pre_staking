@@ -1,12 +1,26 @@
 import Web3 from "web3";
 import fs from "fs";
 import HDWalletProviders from "@truffle/hdwallet-provider";
+import { argv } from "process";
+
+
+// const args = process.argv.slice(2);
+// if (args.length != 2) {
+//     console.log("Invalid number of arguments");
+//     console.log("First arguments be Y: Can you update sys_config.json");
+//     process.exit(1);
+// }
+
+// if (args[0] !== "Y") {
+//     console.log("First arguments must be Y");
+//     process.exit(1);
+// }
 
 
 const config = JSON.parse(fs.readFileSync("./config/sys_config.json", "utf-8"));
 const privateKey = config["mnemonic"].trim();
 const factoryAddress = config["factory_address"].trim();
-const api = config["infura_api"].trim();
+const api = config["bscm_api"].trim();
 const web3 = new Web3(new HDWalletProviders(privateKey, api));
 
 function getAbi(buildPath: string) {
