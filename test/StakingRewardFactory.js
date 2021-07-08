@@ -7,7 +7,7 @@ const TestBEP20 = artifacts.require("TestBEP20");
 
 contract('FactoryContract', (accounts) => {
     const timeConstant = 1000;
-    xcontext("#About constructor", async() => {
+    context("#About constructor", async() => {
         const [creator, simulateRewardToken] = accounts;
         it("should create contract successfully", async () => {
             const genesisTime = Number(await time.latest()) + 10 * 60 * timeConstant  //Add 10 minutes from now and ourtimezone;
@@ -26,11 +26,11 @@ contract('FactoryContract', (accounts) => {
 
         it("should not create a contract", async() => {
             const genesisTime = Number(await time.latest()) - 10 * 60 * timeConstant;   // Sub 10 minute from now
-            await expectRevert(FactoryContract.new(simulateRewardToken, genesisTime, {from: creator}), "StakingRewardFactory::constructor: genesis too soon");
+            await expectRevert(FactoryContract.new(simulateRewardToken, genesisTime, {from: creator}), "SRF::cons: genesis soon");
         })
     });
 
-    xcontext("#Create a single Farm", async() => {
+    context("#Create a single Farm", async() => {
         const [creator, simulateRewardToken, simulateStakingToken, creator1] = accounts;
         let factoryInstance;
         const rewardAmount = 600;
@@ -70,7 +70,7 @@ contract('FactoryContract', (accounts) => {
 
         it("should not deploy contract with same Staking token", async() => {
             await factoryInstance.deploy(...deployParams, { from: creator });
-            await expectRevert(factoryInstance.deploy(...deployParams, {from: creator}), "StakingRewardFactory::deploy: already deployed");
+            await expectRevert(factoryInstance.deploy(...deployParams, {from: creator}), "SRF::deploy: deployed");
         });
 
         it("should not deploy when sender is not owner", async() => {
@@ -79,7 +79,7 @@ contract('FactoryContract', (accounts) => {
         })
     });
     
-    xcontext("#Create two farm", async () => {
+    context("#Create two farm", async () => {
         const [creator, simulateRewardToken, simulateStakingToken, simulateStakingToken1] = accounts;
         const rewardAmount = 600;
         const rewardDuration = 600;
@@ -108,7 +108,7 @@ contract('FactoryContract', (accounts) => {
         expect(Number(await token1.balanceOf(receiver, {from: creator}))).equals(400);
 
     })
-    xcontext("#Deploy and call notifyRewardsAmount", async() => {
+    context("#Deploy and call notifyRewardsAmount", async() => {
         let rewardTokenInstance, factoryInstance;
         const [rewardTokenCreator, factoryCreator, simulateStakingToken] = accounts;
         const rewardAmount = 600;
