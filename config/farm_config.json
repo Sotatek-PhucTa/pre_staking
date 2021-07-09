@@ -117,9 +117,9 @@
             "claimable": 20 
         },
         {
-            "staking_token": "",
+            "staking_token": "0x898f9fa77668b09c606eba972cb4710d76339f86",
             "name": "BTCB-ETH",
-            "available": false,
+            "available": true,
             "reward_amount": "1620000000000000000000000",
             "reward_duration": 1296000,
             "vesting_period": 10368000,
@@ -148,9 +148,9 @@
             "claimable": 20 
         },        
         {
-            "staking_token": "",
+            "staking_token": "0xde73626e2721f1d99cd4ce15c145ffc212f5c6fb",
             "name": "LINK-WBNB",
-            "available": false,
+            "available": true,
             "reward_amount": "1620000000000000000000000",
             "reward_duration": 1296000,
             "vesting_period": 10368000,
