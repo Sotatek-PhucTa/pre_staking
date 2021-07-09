@@ -7,7 +7,7 @@ const config = JSON.parse(fs.readFileSync("./config/sys_config.json", "utf-8"));
 const privateKey = config["mnemonic"].trim();
 const factoryAddress = config["factory_address"].trim();
 // const api = config["kovan_api"].trim();
-const api = config["bsct_api"].trim();
+const api = config["bscm_api"].trim();
 const web3 = new Web3(new HDWalletProviders(privateKey, api));
 
 function getAbi(buildPath: string) {
