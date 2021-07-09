@@ -22,7 +22,8 @@ const fs = require("fs");
 
 const HDWalletProvider = require("@truffle/hdwallet-provider");
 const MNEMONIC = JSON.parse(fs.readFileSync(__dirname + '/config/sys_config.json', "utf8"))["mnemonic"].trim();
-const scanKey = JSON.parse(fs.readFileSync(__dirname + '/config/sys_config.json', "utf8"))["bsct_scan_key"].trim();
+const api = JSON.parse(fs.readFileSync(__dirname + '/config/sys_config.json', "utf8"))["bsct_api"].trim();
+const scanKey = JSON.parse(fs.readFileSync(__dirname + '/config/sys_config.json', "utf8"))["bsc_scan_key"].trim();
 
 //const HDWalletProvider = require('@truffle/hdwallet-provider');
 // const infuraKey = "fj4jll3k.....";
@@ -83,11 +84,11 @@ module.exports = {
     // production: true    // Treats this network as if it was a public net. (default: false)
     // },
     bsc_test: {
-     provider: () => new HDWalletProvider(MNEMONIC, "https://data-seed-prebsc-1-s1.binance.org:8545"),
+     provider: () => new HDWalletProvider(MNEMONIC, api),
      network_id: 97
     },
     bsc_main: {
-      provider: () => new HDWalletProvider(MNEMONIC, "https://bsc-dataseed.binance.org/"),
+      provider: () => new HDWalletProvider(MNEMONIC, api),
       network_id: 56
     },
     ganache: {
@@ -98,7 +99,7 @@ module.exports = {
     kovan: {
       networkCheckTimeout: 100000,
       provider: function() {
-        return new HDWalletProvider(MNEMONIC, "https://kovan.infura.io/v3/20c5612400984c23b0efd3a52838a8b2");
+        return new HDWalletProvider(MNEMONIC, api);
       },
       network_id: 42,
     }
