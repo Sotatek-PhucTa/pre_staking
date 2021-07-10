@@ -22,7 +22,7 @@ const fs = require("fs");
 
 const HDWalletProvider = require("@truffle/hdwallet-provider");
 const MNEMONIC = JSON.parse(fs.readFileSync(__dirname + '/config/sys_config.json', "utf8"))["mnemonic"].trim();
-const api = JSON.parse(fs.readFileSync(__dirname + '/config/sys_config.json', "utf8"))["bsct_api"].trim();
+const api = JSON.parse(fs.readFileSync(__dirname + '/config/sys_config.json', "utf8"))["bscm_api"].trim();
 const scanKey = JSON.parse(fs.readFileSync(__dirname + '/config/sys_config.json', "utf8"))["bsc_scan_key"].trim();
 
 //const HDWalletProvider = require('@truffle/hdwallet-provider');
