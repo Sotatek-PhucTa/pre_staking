@@ -47,9 +47,9 @@
     ],
     "bsc_main": [
         {
-            "staking_token": "0xf1124ddb0a66d2c6fb34d703ff903a1a09e3d38a",
+            "staking_token": "",
             "name": "BUNI-WBNB",
-            "available": true,
+            "available": false,
             "reward_amount": "3240000000000000000000000",
             "reward_duration": 1296000,
             "vesting_period": 10368000,
@@ -57,7 +57,7 @@
             "claimable": 20 
         },
         {
-            "staking_token": "0xeb6d4cee3361427c5af41cde443c2e8c27720550",
+            "staking_token": "0x42612b419E31F6a74b81Ba627C7d8d5e325D6758",
             "name": "BUSD-USDT",
             "available": true,
             "reward_amount": "1620000000000000000000000",
@@ -67,7 +67,7 @@
             "claimable": 20 
         },
         {
-            "staking_token": "0x2e388cd1a3f9bff71acafbfd9cb34a8da463bc34",
+            "staking_token": "0x4a9f3f821590fC22bD682e829656596C29749328",
             "name": "BUSD-USDC",
             "available": true,
             "reward_amount": "1620000000000000000000000",
@@ -77,7 +77,7 @@
             "claimable": 20 
         },
         {
-            "staking_token": "0x79e3ce8aec0cdba6a55b3b956defa3f95e77b542",
+            "staking_token": "0xb05697B07E87e57d96FF9802869a410aD6162777",
             "name": "USDC-USDT",
             "available": true,
             "reward_amount": "1620000000000000000000000",
@@ -87,7 +87,7 @@
             "claimable": 20 
         },
         {
-            "staking_token": "0x76cc071036e5c255101705b2e179136bda413a85",
+            "staking_token": "0x9131Eef9437Cb2f519273a1e3B92CC8bE33E794E",
             "name": "BUSD-WBNB",
             "available": true,
             "reward_amount": "1620000000000000000000000",
@@ -97,7 +97,7 @@
             "claimable": 20 
         },
         {
-            "staking_token": "0x4c870de6055413699f0827545ee29a7d1fae0575",
+            "staking_token": "0xa437baFC1150015774864178E1b479a64A6c0D83",
             "name": "USDT-WBNB",
             "available": true,
             "reward_amount": "1620000000000000000000000",
@@ -107,7 +107,7 @@
             "claimable": 20 
         },
         {
-            "staking_token": "0x830bbba3b449aa46266b23b3534a311c0abbf605",
+            "staking_token": "0xC1520E2A5dE4b5B8f1bbf6576caB6fa1B8380fCF",
             "name": "ETH-WBNB",
             "available": true,
             "reward_amount": "1620000000000000000000000",
@@ -117,7 +117,7 @@
             "claimable": 20 
         },
         {
-            "staking_token": "0x898f9fa77668b09c606eba972cb4710d76339f86",
+            "staking_token": "0x688047B695f3746022d2caf129A9DC86A9538Ebf",
             "name": "BTCB-ETH",
             "available": true,
             "reward_amount": "1620000000000000000000000",
@@ -128,7 +128,7 @@
         },
 
         {
-            "staking_token": "0x9cdc476d76af20735478e0c2d07a834c5f41f4da",
+            "staking_token": "0x9b7cfb301b38032bA5c25B7f77a9F0a22406a2Bb",
             "name": "BTCB-WBNB",
             "available": true,
             "reward_amount": "1620000000000000000000000",
@@ -138,7 +138,7 @@
             "claimable": 20 
         },
         {
-            "staking_token": "0x2184e667da1604bcda43e9b16e2727223ccdefdd",
+            "staking_token": "0x9E9B36445e42654157dc15Ae7AFC5F98914Fe1c3",
             "name": "DOT-WBNB",
             "available": true,
             "reward_amount": "1620000000000000000000000",
@@ -148,7 +148,7 @@
             "claimable": 20 
         },        
         {
-            "staking_token": "0xde73626e2721f1d99cd4ce15c145ffc212f5c6fb",
+            "staking_token": "0xb9aB3e5a73986D41278227bCeA4d8C0CaB7488C7",
             "name": "LINK-WBNB",
             "available": true,
             "reward_amount": "1620000000000000000000000",
