@@ -143,27 +143,28 @@ contract StakingReward is
         return rewardRate.mul(rewardDuration);
     }
 
-    function availableReward(address account) external view override returns (uint256) {
-        uint256 rewardedTime = periodFinish.add(splitWindow);
-        if (block.timestamp < rewardedTime) 
-            return 0;
+    // function availableReward(address account) external view override returns (uint256) {
+    //     uint256 rewardedTime = periodFinish.add(splitWindow);
+    //     if (block.timestamp < rewardedTime) 
+    //         return 0;
         
-        uint256 totalReward;
-        if (totalEarnedReward[account] != 0) 
-            totalReward = totalEarnedReward[account];
-        else
-            totalReward = earned(account);
+    //     uint256 totalReward;
+    //     if (totalEarnedReward[account] != 0) 
+    //         totalReward = totalEarnedReward[account];
+    //     else
+    //         totalReward = earned(account);
         
-        uint256 currentSplit = (block.timestamp).sub(rewardedTime).div(splitWindow).add(1);
-        if (currentSplit > splits.add(1))
-            currentSplit = splits.add(1);
+    //     uint256 currentSplit = (block.timestamp).sub(rewardedTime).div(splitWindow).add(1);
+    //     if (currentSplit > splits.add(1))
+    //         currentSplit = splits.add(1);
 
-        uint256 claimedSplit = claimedSplits[account];
-        if (hasClaimed[account])
-            claimedSplit = claimedSplit.add(1);
+    //     uint256 claimedSplit = claimedSplits[account];
+    //     if (hasClaimed[account])
+    //         claimedSplit = claimedSplit.add(1);
 
-        return currentSplit.sub(claimedSplit).mul(claimable).mul(totalReward).div(100);
-    } 
+    //     return currentSplit.sub(claimedSplit).mul(claimable).mul(totalReward).div(100);
+    // }
+
     //==================== MUTATIVE FUNCTIONS ==================== 
 
     /**
@@ -215,40 +216,93 @@ contract StakingReward is
         emit Withdrawn(_msgSender(), amount);
     }
 
-    /**
-     * @notice staker get reward out of the farm, can get part of the reward in each release
-     */
-    function getReward() public override nonReentrant updateReward(_msgSender()) {
+    function getCurrentSplit() public view returns(uint256 currentSplit) {
+        uint256 currentDate = block.timestamp;
+        uint256 rewardedTime = periodFinish.add(splitWindow);
+        currentSplit = currentDate.sub(rewardedTime).add(splitWindow);
+        if (currentSplit > splits) {
+            currentSplit = splits;
+        }
+    }
+
+    function hasFirstClaimed(address account) public view override returns (bool) {
+        uint256 claimedSplitsForUser = claimedSplits[account];
+        if (claimedSplitsForUser == 0 && !hasClaimed[account]) {
+            return false;
+        }
+        return true;
+    }
+
+    function availableReward(address account) public view override returns (uint256 reward) {
         uint256 rewardedTime = periodFinish.add(splitWindow);
         require(block.timestamp >= rewardedTime, 'Cant claims');
 
-        uint256 reward;
-        uint256 claimedSplitsForUser = claimedSplits[_msgSender()];
-        uint256 currentDate = block.timestamp;
-
-        if (claimedSplitsForUser == 0 && !hasClaimed[_msgSender()]) {
-            totalEarnedReward[_msgSender()] = rewards[_msgSender()];
-            reward = reward.add(rewards[_msgSender()].mul(claimable).div(100));
-            totalVestedRewardForUser[_msgSender()] = rewards[_msgSender()].sub(reward);
+        if (!hasFirstClaimed(account)) {
+            // add 20%
+            reward = reward.add(rewards[account].mul(claimable).div(100));
         }
-        if (claimedSplitsForUser < splits) {
-            uint256 currentSplit = (currentDate.sub(rewardedTime)).div(splitWindow);
-            currentSplit = currentSplit > splits ? splits: currentSplit;
-            reward = reward.add(
-                totalVestedRewardForUser[_msgSender()].mul(currentSplit.sub(claimedSplitsForUser)).div(splits)
-            );
 
-            if (claimedSplitsForUser != currentSplit) {
-                claimedSplits[_msgSender()] = currentSplit;
-            }
-            if (reward > 0) {
-                hasClaimed[_msgSender()] = true;
-                rewards[_msgSender()] = rewards[_msgSender()].sub(reward);
-                rewardToken.safeTransfer(_msgSender(), reward);
-                emit RewardPaid(_msgSender(), reward);
-            }
+        uint256 claimedSplitsForUser = claimedSplits[account];
+        if (claimedSplitsForUser < splits) {
+            uint256 currentSplit = getCurrentSplit();
+            reward = reward.add(
+                totalVestedRewardForUser[account].mul(currentSplit.sub(claimedSplitsForUser)).div(splits)
+            );
         }
     }
+
+    function getReward() public override nonReentrant updateReward(_msgSender()) {
+        uint256 reward = availableReward1(_msgSender());
+        require(reward != 0, "SR: zero reward");
+
+        if (!hasFirstClaimed(_msgSender())) {
+            totalEarnedReward[_msgSender()] = rewards[_msgSender()];
+            totalVestedRewardForUser[_msgSender()] = rewards[_msgSender()].sub(reward);
+        }
+
+        claimedSplits[_msgSender()] = getCurrentSplit();
+
+        hasClaimed[_msgSender()] = true;
+        rewards[_msgSender()] = rewards[_msgSender()].sub(reward);
+        rewardToken.safeTransfer(_msgSender(), reward);
+
+        emit RewardPaid(_msgSender(), reward);
+    }
+
+    // /**
+    //  * @notice staker get reward out of the farm, can get part of the reward in each release
+    //  */
+    // function getReward() public override nonReentrant updateReward(_msgSender()) {
+    //     uint256 rewardedTime = periodFinish.add(splitWindow);
+    //     require(block.timestamp >= rewardedTime, 'Cant claims');
+
+    //     uint256 reward;
+    //     uint256 claimedSplitsForUser = claimedSplits[_msgSender()];
+    //     uint256 currentDate = block.timestamp;
+
+    //     if (claimedSplitsForUser == 0 && !hasClaimed[_msgSender()]) {
+    //         totalEarnedReward[_msgSender()] = rewards[_msgSender()];
+    //         reward = reward.add(rewards[_msgSender()].mul(claimable).div(100));
+    //         totalVestedRewardForUser[_msgSender()] = rewards[_msgSender()].sub(reward);
+    //     }
+    //     if (claimedSplitsForUser < splits) {
+    //         uint256 currentSplit = (currentDate.sub(rewardedTime)).div(splitWindow);
+    //         currentSplit = currentSplit > splits ? splits: currentSplit;
+    //         reward = reward.add(
+    //             totalVestedRewardForUser[_msgSender()].mul(currentSplit.sub(claimedSplitsForUser)).div(splits)
+    //         );
+
+    //         if (claimedSplitsForUser != currentSplit) {
+    //             claimedSplits[_msgSender()] = currentSplit;
+    //         }
+    //         if (reward > 0) {
+    //             hasClaimed[_msgSender()] = true;
+    //             rewards[_msgSender()] = rewards[_msgSender()].sub(reward);
+    //             rewardToken.safeTransfer(_msgSender(), reward);
+    //             emit RewardPaid(_msgSender(), reward);
+    //         }
+    //     }
+    // }
 
     /**
      * @notice Staker exit the farm: Withdraw all LP token and get available reward amount
