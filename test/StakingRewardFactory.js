@@ -26,7 +26,7 @@ contract('FactoryContract', (accounts) => {
 
         it("should not create a contract", async() => {
             const genesisTime = Number(await time.latest()) - 10 * 60 * timeConstant;   // Sub 10 minute from now
-            await expectRevert(FactoryContract.new(simulateRewardToken, genesisTime, {from: creator}), "SRF::cons: genesis soon");
+            await expectRevert(FactoryContract.new(simulateRewardToken, genesisTime, {from: creator}), "genesis too soon");
         })
     });
 
@@ -70,7 +70,7 @@ contract('FactoryContract', (accounts) => {
 
         it("should not deploy contract with same Staking token", async() => {
             await factoryInstance.deploy(...deployParams, { from: creator });
-            await expectRevert(factoryInstance.deploy(...deployParams, {from: creator}), "SRF::deploy: deployed");
+            await expectRevert(factoryInstance.deploy(...deployParams, {from: creator}), "already deployed");
         });
 
         it("should not deploy when sender is not owner", async() => {

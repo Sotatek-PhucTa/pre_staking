@@ -1,4 +1,4 @@
-pragma solidity>=0.6.11;
+pragma solidity=0.6.11;
 
 import "@pancakeswap/pancake-swap-lib/contracts/math/SafeMath.sol";
 import "@pancakeswap/pancake-swap-lib/contracts/token/BEP20/SafeBEP20.sol";
@@ -23,15 +23,15 @@ contract StakingReward is
 
     //==================== STATE VARIABLES =======================
 
-    IBEP20 public rewardToken;
-    IBEP20 public stakingToken;
+    IBEP20 immutable public rewardToken;
+    IBEP20 immutable public stakingToken;
     uint256 public periodFinish;
     uint256 public rewardRate;
-    uint256 public rewardDuration;
-    uint256 public vestingPeriod;
-    uint256 public splits;
-    uint256 public claimable;
-    uint256 public splitWindow;
+    uint256 immutable public rewardDuration;
+    uint256 immutable vestingPeriod;
+    uint256 immutable public splits;
+    uint256 immutable public claimable;
+    uint256 immutable public splitWindow;
     uint256 public lastUpdateTime;
     uint256 public rewardPerTokenStored;
 
@@ -44,6 +44,25 @@ contract StakingReward is
 
     uint256 private _totalSupply;
     mapping(address => uint256) private _balances;
+
+    /*===================EVENTS================*/
+
+    event RewardAdded(uint256 reward);
+    event Staked(address indexed user, uint256 amount);
+    event Withdrawn(address indexed user, uint256 amount);
+    event RewardPaid(address indexed user, uint256 reward);
+
+    /*===================MODIFIERS================*/
+
+    modifier updateReward(address account) {
+        rewardPerTokenStored = rewardPerToken();
+        lastUpdateTime = lastTimeRewardApplicable();
+        if (account != address(0)) {
+            rewards[account] = earned(account);
+            userRewardPerTokenPaid[account] = rewardPerTokenStored;
+        }
+        _;
+    }
 
 
     //==================== CONSTRUCTOR ====================
@@ -67,6 +86,10 @@ contract StakingReward is
         uint256 _splits,
         uint256 _claimable
     ) public {
+        require(_rewardDistributor != address(0), "Zero rewardDistributor");
+        require(_rewardToken != address(0), "Zero rewardToken");
+        require(_stakingToken != address(0), "Zero stakingToken");
+
         rewardToken = IBEP20(_rewardToken);
         stakingToken = IBEP20(_stakingToken);
         rewardDistributor = _rewardDistributor;
@@ -137,7 +160,6 @@ contract StakingReward is
             return 0;
         
         uint256 totalReward;
-
         if (totalEarnedReward[account] != 0) 
             totalReward = totalEarnedReward[account];
         else
@@ -170,7 +192,7 @@ contract StakingReward is
         bytes32 r,
         bytes32 s   
     ) external nonReentrant updateReward(_msgSender()) {
-        require(amount > 0, 'Cannot stake 0');
+        require(amount > 0, 'cant stake 0');
         _totalSupply = _totalSupply.add(amount);
         _balances[_msgSender()] = _balances[_msgSender()].add(amount);
 
@@ -185,7 +207,7 @@ contract StakingReward is
      * @param amount Amount of LP token 
      */
     function stake(uint256 amount) external override nonReentrant updateReward(_msgSender()) {
-        require(amount > 0, 'Cannot stake 0');
+        require(amount > 0, 'cant stake 0');
         _totalSupply = _totalSupply.add(amount);
         _balances[_msgSender()] = _balances[_msgSender()].add(amount);
         stakingToken.safeTransferFrom(_msgSender(), address(this), amount);
@@ -197,7 +219,7 @@ contract StakingReward is
      * @param amount Amount of LP token that we want to withdraw
      */
     function withdraw(uint256 amount) public override nonReentrant updateReward(_msgSender()) {
-        require(amount > 0, 'Cannot withdraw 0');
+        require(amount > 0, 'cant withdraw 0');
         _totalSupply = _totalSupply.sub(amount);
         _balances[_msgSender()] = _balances[_msgSender()].sub(amount);
         stakingToken.safeTransfer(_msgSender(), amount);
@@ -209,7 +231,7 @@ contract StakingReward is
      */
     function getReward() public override nonReentrant updateReward(_msgSender()) {
         uint256 rewardedTime = periodFinish.add(splitWindow);
-        require(block.timestamp >= rewardedTime, 'Cannot claims token now');
+        require(block.timestamp >= rewardedTime, 'Cant claims now');
 
         uint256 reward;
         uint256 claimedSplitsForUser = claimedSplits[_msgSender()];
@@ -267,27 +289,8 @@ contract StakingReward is
     }
 
     function rescueFunds(address tokenAddress, address receiver) external onlyRewardDistributor {
-        require(tokenAddress != address(stakingToken), 'StakingRewards: rescue of staking token not allowed');
+        require(tokenAddress != address(stakingToken), 'cant rescue stakingToken');
         IBEP20(tokenAddress).transfer(receiver, IBEP20(tokenAddress).balanceOf(address(this)));
-    }
-
-    /*===================EVENTS================*/
-
-    event RewardAdded(uint256 reward);
-    event Staked(address indexed user, uint256 amount);
-    event Withdrawn(address indexed user, uint256 amount);
-    event RewardPaid(address indexed user, uint256 reward);
-
-    /*===================MODIFIERS================*/
-
-    modifier updateReward(address account) {
-        rewardPerTokenStored = rewardPerToken();
-        lastUpdateTime = lastTimeRewardApplicable();
-        if (account != address(0)) {
-            rewards[account] = earned(account);
-            userRewardPerTokenPaid[account] = rewardPerTokenStored;
-        }
-        _;
     }
 }
 

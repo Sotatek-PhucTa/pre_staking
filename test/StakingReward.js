@@ -11,8 +11,7 @@ const TestUniswapERC20 = artifacts.require("TestUniswapV2ERC20");
 
 
 contract("StakingReward", async(accounts) => {
-    let factoryInstance, rewardToken, stakingToken, farmInstance;
-    //testing in ganache, block.timestamp return in milisecond
+    let factoryInstance, rewardToken, stakingToken, farmInstance; //testing in ganache, block.timestamp return in milisecond
     const timeConstant = 1000;
 
     const [tokenCreator, factoryCreator, staker1, staker2] = accounts;
@@ -79,7 +78,14 @@ contract("StakingReward", async(accounts) => {
             expect(Number(await stakingToken.balanceOf(farmInstance.address, { from: staker1}))).equals(60);
             expect(Number(await farmInstance.totalSupply({ from: staker1 }))).equals(60);
             expect(Number(await farmInstance.balanceOf(staker1, { from: staker1}))).equals(60);
-        })
+        });
+
+        it("Can withdraw from the farm the amount bigger than deposited", async() => {
+            await stakingToken.approve(farmInstance.address, 100, { from: staker1});
+            await farmInstance.stake(100, { from: staker1 });
+
+            await expectRevert(farmInstance.withdraw(101, { from: staker1}), "overflow");
+        });
 
         it("Stake into the farm and get all rewards", async() => {
             await stakingToken.approve(farmInstance.address, 100, { from: staker1});
@@ -254,7 +260,7 @@ contract("StakingReward", async(accounts) => {
         })
     });
 
-    xcontext("Stake with permit", async() => {
+    context("Stake with permit", async() => {
         beforeEach(async() => {
             const genesisTime = Number(await time.latest()) + 10 * 1000;
 

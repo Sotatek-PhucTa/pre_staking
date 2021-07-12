@@ -33,7 +33,8 @@ const scanKey = JSON.parse(fs.readFileSync(__dirname + '/config/sys_config.json'
 
 module.exports = {
   plugins: [
-    'truffle-plugin-verify'
+    'truffle-plugin-verify',
+    'truffle-contract-size'
   ],
   api_keys: {
     bscscan: scanKey
@@ -113,15 +114,15 @@ module.exports = {
   // Configure your compilers
   compilers: {
     solc: {
-       version: "0.6.11"  // Fetch exact version from solc-bin (default: truffle's version)
+       version: "0.6.11",  // Fetch exact version from solc-bin (default: truffle's version)
       // docker: true,        // Use "0.5.1" you've installed locally with docker (default: false)
-      // settings: {          // See the solidity docs for advice about optimization and evmVersion
-      //  optimizer: {
-      //    enabled: false,
-      //    runs: 200
-      //  },
+      settings: {          // See the solidity docs for advice about optimization and evmVersion
+       optimizer: {
+         enabled: true,
+         runs: 200 
+       },
       //  evmVersion: "byzantium"
-      // }
+      }
     }
   },
 
@@ -133,5 +134,5 @@ module.exports = {
 
   db: {
     enabled: false
-  }
+  },
 };
