@@ -1,4 +1,4 @@
-pragma solidity >=0.6.11;
+pragma solidity=0.6.11;
 
 import "@pancakeswap/pancake-swap-lib/contracts/token/BEP20/IBEP20.sol";
 import "@pancakeswap/pancake-swap-lib/contracts/access/Ownable.sol";
@@ -10,8 +10,8 @@ contract StakingRewardsFactory is Ownable {
     //===================STATE VARIABLES====================
 
     //Address of token that reward to stakers
-    address public rewardToken;
-    uint256 public stakingRewardGenesis;
+    address immutable public rewardToken;
+    uint256 immutable public stakingRewardGenesis;
 
     //the staking tokens for which this factory deployed
     address[] public stakingTokens;
@@ -29,6 +29,7 @@ contract StakingRewardsFactory is Ownable {
 
     constructor(address _rewardToken, uint256 _stakingRewardGenesis) public Ownable() {
         require(_stakingRewardGenesis >= block.timestamp, 'SRF::cons: genesis soon');
+        require(_rewardToken != address(0), "Zero rewardToken");
 
         rewardToken = _rewardToken;
         stakingRewardGenesis = _stakingRewardGenesis;
@@ -51,7 +52,7 @@ contract StakingRewardsFactory is Ownable {
         uint256 vestingPeriod,
         uint256 splits,
         uint256 claimable
-    ) public onlyOwner {
+    ) external onlyOwner {
         StakingRewardInfo storage info = stakingRewardInfosByStakingToken[stakingToken];
         require(info.stakingReward == address(0), 'SRF::deploy: deployed');
 
@@ -77,7 +78,7 @@ contract StakingRewardsFactory is Ownable {
     /**
      * @notice Call notifyRewardAmount for all stakingToken that already deployed by this factory
      */
-    function notifyRewardAmounts() public {
+    function notifyRewardAmounts() external {
         require(stakingTokens.length > 0, 'SRF::notify: not deployed');
         for (uint256 i = 0; i < stakingTokens.length; i++) {
             notifyRewardAmount(stakingTokens[i]);
@@ -108,7 +109,9 @@ contract StakingRewardsFactory is Ownable {
      * @param stakingToken stakingToken in the pool that we want to rescue fund
      * @param tokenAddress address of the token we want to rescue
      */
-    function rescueFunds(address stakingToken, address tokenAddress) public onlyOwner {
+    function rescueFunds(address stakingToken, address tokenAddress) external onlyOwner {
+        require(stakingToken != address(0), "Zero stakingToken");
+        require(tokenAddress != address(0), "Zero tokenAddress");
         StakingRewardInfo storage info = stakingRewardInfosByStakingToken[stakingToken];
         require(info.stakingReward != address(0), 'SRF::rescure: not deployed'); 
         StakingReward(info.stakingReward).rescueFunds(tokenAddress, msg.sender);
@@ -118,7 +121,8 @@ contract StakingRewardsFactory is Ownable {
      * @notice Rescue leftover fund from this factory
      * @param tokenAddress address of the token we want to rescue
      */
-    function rescueFactoryFunds(address tokenAddress) public onlyOwner {
+    function rescueFactoryFunds(address tokenAddress) external onlyOwner {
+        require(tokenAddress != address(0), "Zero tokenAddress");
         IBEP20 token = IBEP20(tokenAddress);
         uint256 balance = token.balanceOf(address(this));
         require(balance > 0, 'SRF::rescue1: No balance');

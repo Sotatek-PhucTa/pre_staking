@@ -1,4 +1,4 @@
-pragma solidity>=0.6.11;
+pragma solidity=0.6.11;
 
 import "@pancakeswap/pancake-swap-lib/contracts/math/SafeMath.sol";
 import "@pancakeswap/pancake-swap-lib/contracts/token/BEP20/SafeBEP20.sol";
@@ -23,15 +23,15 @@ contract StakingReward is
 
     //==================== STATE VARIABLES =======================
 
-    IBEP20 public rewardToken;
-    IBEP20 public stakingToken;
+    IBEP20 immutable public rewardToken;
+    IBEP20 immutable public stakingToken;
     uint256 public periodFinish;
     uint256 public rewardRate;
-    uint256 public rewardDuration;
-    uint256 public vestingPeriod;
-    uint256 public splits;
-    uint256 public claimable;
-    uint256 public splitWindow;
+    uint256 immutable public rewardDuration;
+    uint256 immutable vestingPeriod;
+    uint256 immutable public splits;
+    uint256 immutable public claimable;
+    uint256 immutable public splitWindow;
     uint256 public lastUpdateTime;
     uint256 public rewardPerTokenStored;
 
@@ -44,6 +44,14 @@ contract StakingReward is
 
     uint256 private _totalSupply;
     mapping(address => uint256) private _balances;
+
+    /*===================EVENTS================*/
+
+    event RewardAdded(uint256 reward);
+    event Staked(address indexed user, uint256 amount);
+    event Withdrawn(address indexed user, uint256 amount);
+    event RewardPaid(address indexed user, uint256 reward);
+
 
 
     //==================== CONSTRUCTOR ====================
@@ -67,6 +75,10 @@ contract StakingReward is
         uint256 _splits,
         uint256 _claimable
     ) public {
+        require(_rewardDistributor != address(0), "Zero rewardDistributor");
+        require(_rewardToken != address(0), "Zero rewardToken");
+        require(_stakingToken != address(0), "Zero stakingToken");
+
         rewardToken = IBEP20(_rewardToken);
         stakingToken = IBEP20(_stakingToken);
         rewardDistributor = _rewardDistributor;
@@ -137,7 +149,6 @@ contract StakingReward is
             return 0;
         
         uint256 totalReward;
-
         if (totalEarnedReward[account] != 0) 
             totalReward = totalEarnedReward[account];
         else
@@ -270,13 +281,6 @@ contract StakingReward is
         require(tokenAddress != address(stakingToken), 'StakingRewards: rescue of staking token not allowed');
         IBEP20(tokenAddress).transfer(receiver, IBEP20(tokenAddress).balanceOf(address(this)));
     }
-
-    /*===================EVENTS================*/
-
-    event RewardAdded(uint256 reward);
-    event Staked(address indexed user, uint256 amount);
-    event Withdrawn(address indexed user, uint256 amount);
-    event RewardPaid(address indexed user, uint256 reward);
 
     /*===================MODIFIERS================*/
 
