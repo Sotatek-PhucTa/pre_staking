@@ -28,8 +28,8 @@ contract StakingRewardsFactory is Ownable {
     mapping(address => StakingRewardInfo) public stakingRewardInfosByStakingToken;
 
     constructor(address _rewardToken, uint256 _stakingRewardGenesis) public Ownable() {
-        require(_stakingRewardGenesis >= block.timestamp, 'SRF::cons: genesis soon');
-        require(_rewardToken != address(0), "Zero rewardToken");
+        require(_stakingRewardGenesis >= block.timestamp, 'soon');
+        require(_rewardToken != address(0), "cons:1");
 
         rewardToken = _rewardToken;
         stakingRewardGenesis = _stakingRewardGenesis;
@@ -54,7 +54,7 @@ contract StakingRewardsFactory is Ownable {
         uint256 claimable
     ) external onlyOwner {
         StakingRewardInfo storage info = stakingRewardInfosByStakingToken[stakingToken];
-        require(info.stakingReward == address(0), 'SRF::deploy: deployed');
+        require(info.stakingReward == address(0), 'dep');
 
         info.stakingReward = address(
             new StakingReward(
@@ -79,7 +79,7 @@ contract StakingRewardsFactory is Ownable {
      * @notice Call notifyRewardAmount for all stakingToken that already deployed by this factory
      */
     function notifyRewardAmounts() external {
-        require(stakingTokens.length > 0, 'SRF::notify: not deployed');
+        require(stakingTokens.length > 0, 'not1');
         for (uint256 i = 0; i < stakingTokens.length; i++) {
             notifyRewardAmount(stakingTokens[i]);
         }
@@ -90,16 +90,16 @@ contract StakingRewardsFactory is Ownable {
      * transfer info.rewardAmount to StakingReward
      */
     function notifyRewardAmount(address stakingToken) public {
-        require(block.timestamp >= stakingRewardGenesis, 'SRF::notify1: not ready');
+        require(block.timestamp >= stakingRewardGenesis, 'not2:not ready');
         
         StakingRewardInfo storage info = stakingRewardInfosByStakingToken[stakingToken];
-        require(info.stakingReward != address(0), 'SRF::notify1: not deployed');
+        require(info.stakingReward != address(0), 'not2:not deployed');
 
         if (info.rewardAmount > 0) {
             uint256 rewardAmount = info.rewardAmount;
             info.rewardAmount = 0;
             require(IBEP20(rewardToken).transfer(info.stakingReward, rewardAmount),
-            'SRF::notify1: transfer failed');
+            'not2:failed');
             StakingReward(info.stakingReward).notifyRewardAmount(rewardAmount);
         }
     }
@@ -110,10 +110,10 @@ contract StakingRewardsFactory is Ownable {
      * @param tokenAddress address of the token we want to rescue
      */
     function rescueFunds(address stakingToken, address tokenAddress) external onlyOwner {
-        require(stakingToken != address(0), "Zero stakingToken");
-        require(tokenAddress != address(0), "Zero tokenAddress");
+        require(stakingToken != address(0), "res1:1");
+        require(tokenAddress != address(0), "res1:2");
         StakingRewardInfo storage info = stakingRewardInfosByStakingToken[stakingToken];
-        require(info.stakingReward != address(0), 'SRF::rescure: not deployed'); 
+        require(info.stakingReward != address(0), 'res:not deployed'); 
         StakingReward(info.stakingReward).rescueFunds(tokenAddress, msg.sender);
     }
 
@@ -122,11 +122,10 @@ contract StakingRewardsFactory is Ownable {
      * @param tokenAddress address of the token we want to rescue
      */
     function rescueFactoryFunds(address tokenAddress) external onlyOwner {
-        require(tokenAddress != address(0), "Zero tokenAddress");
+        require(tokenAddress != address(0), "res2:1");
         IBEP20 token = IBEP20(tokenAddress);
         uint256 balance = token.balanceOf(address(this));
-        require(balance > 0, 'SRF::rescue1: No balance');
+        require(balance > 0, 'res2:No balance');
         token.transfer(msg.sender, balance);
     }
 }
-

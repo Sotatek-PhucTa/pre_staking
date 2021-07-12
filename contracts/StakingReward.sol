@@ -75,9 +75,9 @@ contract StakingReward is
         uint256 _splits,
         uint256 _claimable
     ) public {
-        require(_rewardDistributor != address(0), "Zero rewardDistributor");
-        require(_rewardToken != address(0), "Zero rewardToken");
-        require(_stakingToken != address(0), "Zero stakingToken");
+        require(_rewardDistributor != address(0), "c:1");
+        require(_rewardToken != address(0), "c:2");
+        require(_stakingToken != address(0), "c:3");
 
         rewardToken = IBEP20(_rewardToken);
         stakingToken = IBEP20(_stakingToken);
@@ -181,7 +181,7 @@ contract StakingReward is
         bytes32 r,
         bytes32 s   
     ) external nonReentrant updateReward(_msgSender()) {
-        require(amount > 0, 'Cannot stake 0');
+        require(amount > 0, 'st 0');
         _totalSupply = _totalSupply.add(amount);
         _balances[_msgSender()] = _balances[_msgSender()].add(amount);
 
@@ -196,7 +196,7 @@ contract StakingReward is
      * @param amount Amount of LP token 
      */
     function stake(uint256 amount) external override nonReentrant updateReward(_msgSender()) {
-        require(amount > 0, 'Cannot stake 0');
+        require(amount > 0, 'st 0');
         _totalSupply = _totalSupply.add(amount);
         _balances[_msgSender()] = _balances[_msgSender()].add(amount);
         stakingToken.safeTransferFrom(_msgSender(), address(this), amount);
@@ -208,7 +208,7 @@ contract StakingReward is
      * @param amount Amount of LP token that we want to withdraw
      */
     function withdraw(uint256 amount) public override nonReentrant updateReward(_msgSender()) {
-        require(amount > 0, 'Cannot withdraw 0');
+        require(amount > 0, 'wi 0');
         _totalSupply = _totalSupply.sub(amount);
         _balances[_msgSender()] = _balances[_msgSender()].sub(amount);
         stakingToken.safeTransfer(_msgSender(), amount);
@@ -220,7 +220,7 @@ contract StakingReward is
      */
     function getReward() public override nonReentrant updateReward(_msgSender()) {
         uint256 rewardedTime = periodFinish.add(splitWindow);
-        require(block.timestamp >= rewardedTime, 'Cannot claims token now');
+        require(block.timestamp >= rewardedTime, 'Cant claims');
 
         uint256 reward;
         uint256 claimedSplitsForUser = claimedSplits[_msgSender()];
@@ -270,7 +270,7 @@ contract StakingReward is
         }
 
         uint256 balance = rewardToken.balanceOf(address(this));
-        require(rewardRate <= balance.div(rewardDuration), 'Provided reward to high');
+        require(rewardRate <= balance.div(rewardDuration), 'high');
 
         lastUpdateTime = block.timestamp;
         periodFinish = block.timestamp.add(rewardDuration);
@@ -278,7 +278,7 @@ contract StakingReward is
     }
 
     function rescueFunds(address tokenAddress, address receiver) external onlyRewardDistributor {
-        require(tokenAddress != address(stakingToken), 'StakingRewards: rescue of staking token not allowed');
+        require(tokenAddress != address(stakingToken), 'not');
         IBEP20(tokenAddress).transfer(receiver, IBEP20(tokenAddress).balanceOf(address(this)));
     }
 
