@@ -34,6 +34,7 @@ contract StakingReward is
     uint256 immutable public splitWindow;
     uint256 public lastUpdateTime;
     uint256 public rewardPerTokenStored;
+    uint256 public remainRewardedStaker;
 
     mapping(address => uint256) public userRewardPerTokenPaid;
     mapping(address => uint256) public rewards;
@@ -89,6 +90,7 @@ contract StakingReward is
         require(_rewardDistributor != address(0), "Zero rewardDistributor");
         require(_rewardToken != address(0), "Zero rewardToken");
         require(_stakingToken != address(0), "Zero stakingToken");
+        require(_claimable.mul(_splits.add(1)) == 100, "Incorrect argument");
 
         rewardToken = IBEP20(_rewardToken);
         stakingToken = IBEP20(_stakingToken);
@@ -193,6 +195,9 @@ contract StakingReward is
         bytes32 s   
     ) external nonReentrant updateReward(_msgSender()) {
         require(amount > 0, 'cant stake 0');
+        if (_balances[_msgSender()] == 0)
+            remainRewardedStaker = remainRewardedStaker.add(1);
+
         _totalSupply = _totalSupply.add(amount);
         _balances[_msgSender()] = _balances[_msgSender()].add(amount);
 
@@ -208,6 +213,9 @@ contract StakingReward is
      */
     function stake(uint256 amount) external override nonReentrant updateReward(_msgSender()) {
         require(amount > 0, 'cant stake 0');
+        if (_balances[_msgSender()] == 0)
+            remainRewardedStaker = remainRewardedStaker.add(1);
+
         _totalSupply = _totalSupply.add(amount);
         _balances[_msgSender()] = _balances[_msgSender()].add(amount);
         stakingToken.safeTransferFrom(_msgSender(), address(this), amount);
@@ -258,6 +266,9 @@ contract StakingReward is
                 rewardToken.safeTransfer(_msgSender(), reward);
                 emit RewardPaid(_msgSender(), reward);
             }
+
+            if (claimedSplits[_msgSender()] == splits)
+                remainRewardedStaker = remainRewardedStaker.sub(1);
         }
     }
 
@@ -289,6 +300,7 @@ contract StakingReward is
     }
 
     function rescueFunds(address tokenAddress, address receiver) external onlyRewardDistributor {
+        require(remainRewardedStaker == 0, "Cant rescue now");
         require(tokenAddress != address(stakingToken), 'cant rescue stakingToken');
         IBEP20(tokenAddress).transfer(receiver, IBEP20(tokenAddress).balanceOf(address(this)));
     }
